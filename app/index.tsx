@@ -1,44 +1,39 @@
-import { View, Text ,Image} from 'react-native'
-import React, { useEffect } from 'react'
-import { StyleSheet } from 'react-native'
-import {colors} from '../constants/theme'
-import { useRouter } from 'expo-router'
-
+import { View, Text, Image } from "react-native";
+import React, { useEffect } from "react";
+import { StyleSheet } from "react-native";
+import { colors } from "../constants/theme";
+import { useRouter } from "expo-router";
 
 const index = () => {
-  const router=useRouter();
+  const router = useRouter();
   useEffect(() => {
     setTimeout(() => {
-      router.push('/welcome')
+      router.push("/welcome");
     }, 2000);
-  }, [])
-  
+  }, []);
+
   return (
     <View style={style.container}>
       <Image
-      style={style.logo}
-        resizeMode='contain'
-        source={require('../assets/images/splashImage.png')}
+        style={style.logo}
+        resizeMode="contain"
+        source={require("../assets/images/splashImage.png")}
       />
     </View>
-  )
-}
+  );
+};
 
-export default index
+export default index;
 
-const style=StyleSheet.create({
-container:{
-flex:1,
-justifyContent:'center',
-alignItems:'center',
-backgroundColor:colors.neutral900,
-
-},
-logo:{
-  height:'20%',
-  aspectRatio:1
-
-
-
-}
-})
+const style = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.neutral900,
+  },
+  logo: {
+    height: "20%",
+    aspectRatio: 1,
+  },
+});
