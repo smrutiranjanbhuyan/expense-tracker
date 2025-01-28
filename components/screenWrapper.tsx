@@ -1,9 +1,16 @@
-import { View, Text, StyleSheet, Platform, Dimensions, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  Dimensions,
+  StatusBar,
+} from "react-native";
 import React from "react";
 import { ScreenWrapperProps } from "@/types";
 import { colors } from "@/constants/theme";
 const { height } = Dimensions.get("window");
-const screenWrapper = ({ style, children }: ScreenWrapperProps) => {
+const ScreenWrapper = ({ style, children }: ScreenWrapperProps) => {
   let paddingTop = Platform.OS == "ios" ? height * 0.06 : 50;
   return (
     <View
@@ -16,14 +23,12 @@ const screenWrapper = ({ style, children }: ScreenWrapperProps) => {
         style,
       ]}
     >
-        <StatusBar barStyle={'light-content'}/>
-      {
-        children
-      }
+      <StatusBar barStyle={"light-content"} />
+      {children}
     </View>
   );
 };
 
-export default screenWrapper;
+export default ScreenWrapper;
 
 const style = StyleSheet.create({});

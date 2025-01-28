@@ -1,12 +1,15 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { View, Text } from "react-native";
+import React from "react";
+import ScreenWrapper from "@/components/screenWrapper";
 
 const Welcome = () => {
   return (
-    <View>
-      <Text>Welcome</Text>
-    </View>
-  )
-}
+    <ScreenWrapper>
+      <View>
+        <Text>Welcome</Text>
+      </View>
+    </ScreenWrapper>
+  );
+};
 
-export default Welcome
+export default Welcome;
