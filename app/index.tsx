@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { colors } from "../constants/theme";
 import { useRouter } from "expo-router";
+import ScreenWrapper from "@/components/screenWrapper";
 
 const index = () => {
   const router = useRouter();
@@ -13,13 +14,15 @@ const index = () => {
   }, []);
 
   return (
-    <View style={style.container}>
+   <ScreenWrapper>
+     <View style={style.container}>
       <Image
         style={style.logo}
         resizeMode="contain"
         source={require("../assets/images/splashImage.png")}
       />
     </View>
+   </ScreenWrapper>
   );
 };
 
