@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { colors } from "../constants/theme";
 import { useRouter } from "expo-router";
-import ScreenWrapper from "@/components/screenWrapper";
+import ScreenWrapper from "@/components/screenWrapper"
 
 const index = () => {
   const router = useRouter();
