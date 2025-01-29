@@ -3,6 +3,7 @@ import React from 'react'
 import { CustomButtonProps } from '@/types'
 import { colors, radius } from '@/constants/theme'
 import { verticalScale } from '@/utils/styling'
+import Loading from './Loading'
 
 const Button = ({
     children,
@@ -13,6 +14,7 @@ const Button = ({
     if(loading){
         return ( <View style={[style,styles.button,{backgroundColor:"transparent"}]}>
             {/* {Loading component } */}
+            <Loading/>
 
         </View>)
     }
