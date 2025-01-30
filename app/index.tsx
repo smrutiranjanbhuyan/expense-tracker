@@ -6,12 +6,12 @@ import { useRouter } from "expo-router";
 import ScreenWrapper from "@/components/ScreenWrapper"
 
 const index = () => {
-  const router = useRouter();
-  useEffect(() => {
-    setTimeout(() => {
-      router.push("/welcome");
-    }, 2000);
-  }, []);
+  // const router = useRouter();
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     router.push("/welcome");
+  //   }, 2000);
+  // }, []);
 
   return (
    <ScreenWrapper>
