@@ -33,7 +33,11 @@ const Register = () => {
     );
     console.log('user created', res);
     if(!res.success){
-      Alert.alert('Sign up', res?.message|| "User already exist");
+      let message=res?.message;
+      if(message?.includes('(auth/email-already-in-use)')){
+        message='Email already in use'
+      }
+      Alert.alert('Sign up', message || "User already exist");
     }
     setIsLoading(false);
     
