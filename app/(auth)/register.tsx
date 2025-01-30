@@ -9,6 +9,7 @@ import Input from "@/components/Input";
 import * as Icons from "phosphor-react-native";
 import Button from "@/components/Button";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/contexts/authContext";
 
 const Register = () => {
   const router = useRouter();
@@ -17,15 +18,24 @@ const Register = () => {
   const passwordRef = useRef("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handelSubmit = async () => {
-    if(!emailRef.current || !passwordRef.current || !nameRef.current) {
-       Alert.alert('Sign up','Plese fill the all fields');
-       return;
-    }
-    console.log('email' ,emailRef.current);
-    console.log('password' ,passwordRef.current);
-    console.log('name' ,nameRef.current);
+  const { register: registerUser } = useAuth();
 
+  const handelSubmit = async () => {
+    if (!emailRef.current || !passwordRef.current || !nameRef.current) {
+      Alert.alert("Sign up", "Plese fill the all fields");
+      return;
+    }
+    setIsLoading(true);
+    const res = await registerUser(
+      emailRef.current,
+      passwordRef.current,
+      nameRef.current
+    );
+    console.log('user created', res);
+    if(!res.success){
+      Alert.alert('Sign up', res.msg);
+    }
+    setIsLoading(false);
     
   };
   return (
@@ -37,7 +47,7 @@ const Register = () => {
             Let's
           </Typo>
           <Typo size={30} fontWeight={"800"}>
-           Get Started
+            Get Started
           </Typo>
         </View>
 
@@ -80,7 +90,7 @@ const Register = () => {
               />
             }
           />
-         
+
           <Button onPress={handelSubmit} loading={isLoading}>
             <Typo fontWeight={"700"} color={colors.black} size={21}>
               Sign up
