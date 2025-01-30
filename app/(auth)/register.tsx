@@ -36,6 +36,8 @@ const Register = () => {
       let message=res?.message;
       if(message?.includes('(auth/email-already-in-use)')){
         message='Email already in use'
+      }else if(message?.includes('auth/invalid-email')){
+        message='Invalid email';
       }
       Alert.alert('Sign up', message || "User already exist");
     }

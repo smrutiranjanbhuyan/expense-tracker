@@ -9,22 +9,32 @@ import Input from "@/components/Input";
 import * as Icons from "phosphor-react-native";
 import Button from "@/components/Button";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/contexts/authContext";
 
 const login = () => {
   const router = useRouter();
   const emailRef = useRef("");
   const passwordRef = useRef("");
   const [isLoading, setIsLoading] = useState(false);
+  const { login: loginUser } = useAuth();
 
   const handelSubmit = async () => {
-    if(!emailRef.current || !passwordRef.current) {
-       Alert.alert('Login','Plese fill the all fields');
-       return;
+    if (!emailRef.current || !passwordRef.current) {
+      Alert.alert("Login", "Plese fill the all fields");
+      return;
     }
-    console.log('email' ,emailRef.current);
-    console.log('password' ,passwordRef.current);
-
-    
+    setIsLoading(true);
+    const res = await loginUser(emailRef.current, passwordRef.current);
+    setIsLoading(false);
+    if (!res.success) {
+    let message=res?.message;
+    if(message?.includes('(auth/invalid-credential)')){
+      message='Invalid email or password';
+    }else if(message?.includes('auth/invalid-email')){
+      message='Invalid email';
+    }
+      Alert.alert("Login", message || "Something went wrong");
+    }
   };
   return (
     <ScreenWrapper>
