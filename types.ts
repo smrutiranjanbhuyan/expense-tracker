@@ -146,19 +146,19 @@ export type AuthContextType = {
   login: (
     email: string,
     password: string
-  ) => Promise<{ success: boolean; msg?: string }>;
+  ) => Promise<{ success: boolean; message?: string }>;
   register: (
     email: string,
     password: string,
     name: string
-  ) => Promise<{ success: boolean; msg?: string }>;
+  ) => Promise<{ success: boolean; message?: string }>;
   updateUserData: (userId: string) => Promise<void>;
 };
 
 export type ResponseType = {
   success: boolean;
   data?: any;
-  msg?: string;
+  message?: string;
 };
 
 export type WalletType = {

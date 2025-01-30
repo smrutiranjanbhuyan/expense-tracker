@@ -33,7 +33,7 @@ const Register = () => {
     );
     console.log('user created', res);
     if(!res.success){
-      Alert.alert('Sign up', res.msg);
+      Alert.alert('Sign up', res?.message|| "User already exist");
     }
     setIsLoading(false);
     
