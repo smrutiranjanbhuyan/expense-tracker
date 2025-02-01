@@ -31,7 +31,7 @@ const Register = () => {
       passwordRef.current,
       nameRef.current
     );
-    console.log('user created', res);
+    // console.log('user created', res);
     if(!res.success){
       let message=res?.message;
       if(message?.includes('(auth/email-already-in-use)')){
