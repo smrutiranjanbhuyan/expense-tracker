@@ -14,6 +14,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import { useRouter } from "expo-router";
+import  StatusBar  from "@/components/StatusBar";
 const Profile = () => {
   const router = useRouter();
   const { user } = useAuth();
@@ -72,6 +73,7 @@ const Profile = () => {
   };
   return (
     <ScreenWrapper>
+      <StatusBar barStyle="light-content" backgroundColor={colors.neutral900}/>
       <View style={styles.container}>
         <Header
           title="Profile"
