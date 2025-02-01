@@ -14,7 +14,8 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import { useRouter } from "expo-router";
-import  StatusBar  from "@/components/StatusBar";
+
+import CustomStatusBar from "@/components/StatusBar";
 const Profile = () => {
   const router = useRouter();
   const { user } = useAuth();
@@ -63,7 +64,7 @@ const Profile = () => {
     ]);
   };
   const handelPress = (item: accountOptionType) => {
-    if ((item.title == "Logout")) {
+    if (item.title == "Logout") {
       showLogoutAlert();
     }
 
@@ -73,7 +74,10 @@ const Profile = () => {
   };
   return (
     <ScreenWrapper>
-      <StatusBar barStyle="light-content" backgroundColor={colors.neutral900}/>
+      <CustomStatusBar
+        barStyle="light-content"
+        backgroundColor={colors.neutral900}
+      />
       <View style={styles.container}>
         <Header
           title="Profile"
