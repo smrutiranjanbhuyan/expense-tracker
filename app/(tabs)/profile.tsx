@@ -15,7 +15,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import { useRouter } from "expo-router";
 
-import CustomStatusBar from "@/components/StatusBar";
+
 const Profile = () => {
   const router = useRouter();
   const { user } = useAuth();
@@ -74,10 +74,7 @@ const Profile = () => {
   };
   return (
     <ScreenWrapper>
-      <CustomStatusBar
-        barStyle="light-content"
-        backgroundColor={colors.neutral900}
-      />
+ 
       <View style={styles.container}>
         <Header
           title="Profile"
