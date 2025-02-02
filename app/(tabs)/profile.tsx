@@ -1,5 +1,12 @@
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React from "react";
+import {
+  Alert,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useCallback } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
@@ -13,10 +20,15 @@ import * as Icon from "phosphor-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
-import { useRouter } from "expo-router";
-
+import { useFocusEffect, useRouter } from "expo-router";
 
 const Profile = () => {
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle("light-content");
+      StatusBar.setBackgroundColor(colors.neutral900);
+    }, [])
+  );
   const router = useRouter();
   const { user } = useAuth();
   const accountOptions: accountOptionType[] = [
@@ -74,7 +86,6 @@ const Profile = () => {
   };
   return (
     <ScreenWrapper>
- 
       <View style={styles.container}>
         <Header
           title="Profile"
