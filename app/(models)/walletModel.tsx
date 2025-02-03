@@ -1,47 +1,44 @@
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  Touchable,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { colors, spacingX, spacingY } from "@/constants/theme";
 import { scale, verticalScale } from "@/utils/styling";
 import ModelWrapper from "@/components/ModelWrapper";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
-import { Image } from "expo-image";
-import { getProfileImage } from "@/services/imageService";
-import * as Icon from "phosphor-react-native";
 import Typo from "@/components/Typo";
 import Input from "@/components/Input";
-import { UserDataType, WalletType } from "@/types";
+import { WalletType } from "@/types";
 import Button from "@/components/Button";
 import { useAuth } from "@/contexts/authContext";
-import { updateUser } from "@/services/userService";
-import { useRouter } from "expo-router";
-
-import * as ImagePicker from "expo-image-picker";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import ImageUpload from "@/components/ImageUpload";
-import { createOrUpdateWallet } from "@/services/walletSercice";
+import { createOrUpdateWallet, deleteWallet } from "@/services/walletSercice";
+import * as Icon from "phosphor-react-native";
 
 const walletModel = () => {
   const router = useRouter();
-  const { user, updateUserData } = useAuth();
+  const { user } = useAuth();
+
+  const oldWallet: { name: string; image: string; id: string } = useLocalSearchParams();
+  useEffect(() => {
+    if (oldWallet?.id) {
+      setWallet({
+        name: oldWallet.name,
+        image: oldWallet.image,
+      });
+    }
+  }, []);
 
   const [wallet, setWallet] = useState<WalletType>({
     name: "",
     image: null,
-  }); 
+  });
   const [loading, setLoading] = useState(false);
 
   let onSubmit = async () => {
     let { name, image } = wallet;
     if (!name.trim() || !image) {
-      Alert.alert("Wallet", "Plese fill all the fields");
+      Alert.alert("Wallet", "Please fill all the fields");
       return;
     }
     const data: WalletType = {
@@ -50,22 +47,59 @@ const walletModel = () => {
       uid: user?.uid,
     };
 
+    if (oldWallet?.id) data.id = oldWallet.id;
+
+    console.log("Submitting data:", data);
+
     setLoading(true);
 
     const res = await createOrUpdateWallet(data);
-    // console.log("result", res);
+    console.log("Result:", res);
     setLoading(false);
-    if (res.success == true) {
+    if (res.success) {
       router.back();
     } else {
-      Alert.alert("Wallet", "Failed to update wallet");
+      Alert.alert("Wallet", res.message || "Failed to update wallet");
     }
   };
+
+  const onDelete = async () => {
+   if(!oldWallet?.id) return;
+    setLoading(true);
+    const res=await deleteWallet(oldWallet.id);
+    setLoading(false);
+    if(res.success){
+      router.back();
+    }else{
+      Alert.alert("Wallet", res.message || "Failed to delete wallet");
+    } 
+    
+  };
+
+  const showDeleteAlert = () => {
+    Alert.alert(
+      "Delete Wallet",
+      "Are you sure you want to delete this wallet? This action will remove all transactions related to this wallet.",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: () => onDelete(),
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
   return (
     <ModelWrapper>
       <View style={styles.container}>
         <Header
-          title="New Wallet"
+          title={oldWallet?.id ? "Edit Wallet" : "Add Wallet"}
           leftIcon={<BackButton />}
           style={{
             marginBottom: spacingY._10,
@@ -105,9 +139,24 @@ const walletModel = () => {
       </View>
 
       <View style={styles.footer}>
+        {oldWallet?.id && !loading && (
+         <Button
+         onPress={showDeleteAlert}
+         style={{
+           backgroundColor: colors.rose,
+           paddingHorizontal: spacingX._15,
+         }}
+       >
+         <Icon.Trash
+           color={colors.white}
+           size={verticalScale(24)}
+           weight="bold"
+         />
+       </Button>
+        )}
         <Button onPress={onSubmit} loading={loading} style={{ flex: 1 }}>
           <Typo color={colors.black} fontWeight={"700"}>
-            Add Wallet
+            {oldWallet?.id ? "Update Wallet" : "Add Wallet"}
           </Typo>
         </Button>
       </View>
@@ -138,35 +187,6 @@ const styles = StyleSheet.create({
     gap: spacingY._30,
     marginTop: spacingY._15,
   },
-  avtarContainer: {
-    position: "relative",
-    alignSelf: "center",
-  },
-  avtar: {
-    alignItems: "center",
-    backgroundColor: colors.neutral300,
-    height: verticalScale(135),
-    width: verticalScale(135),
-    borderRadius: 200,
-    borderWidth: 1,
-    borderColor: colors.neutral500,
-  },
-  editIcon: {
-    position: "absolute",
-    bottom: spacingY._7,
-    right: spacingY._7,
-    borderRadius: 50,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.neutral200,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 6,
-    padding: spacingY._7,
-  },
-
   inputContainer: {
     gap: spacingY._10,
   },
