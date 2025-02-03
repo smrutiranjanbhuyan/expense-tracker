@@ -1,25 +1,31 @@
 import { WalletType, ResponseType } from "@/types";
 import { uploadFileToCloudinary } from "./imageService";
-import { collection, doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  setDoc,
+  serverTimestamp,
+  deleteDoc,
+} from "firebase/firestore";
 import { firestore } from "@/config/firebase";
 
 export const createOrUpdateWallet = async (
   walletData: Partial<WalletType>
 ): Promise<ResponseType> => {
   try {
-    let walletToSave = {
-      ...walletData,
-      amount: walletData?.id ? walletData.amount : 0,
-      totalIncome: walletData?.id ? walletData.totalIncome : 0,
-      totalExpenses: walletData?.id ? walletData.totalExpenses : 0,
-      created: walletData?.id ? walletData.created : new Date(),
-    };
+    if (!walletData) {
+      return { success: false, message: "Invalid wallet data" };
+    }
 
-    if (walletData.image) {
+    let walletToSave = {...walletData};
+
+    // Handle Image Upload
+    if (walletData.image?.uri) {
       const imageUploadRes = await uploadFileToCloudinary(
         { uri: walletData.image.uri },
         "wallets"
       );
+
       if (!imageUploadRes.success) {
         return {
           success: false,
@@ -29,15 +35,28 @@ export const createOrUpdateWallet = async (
       walletToSave.image = imageUploadRes.data;
     }
 
+    // Create or update wallet
     const walletRef = walletData?.id
-      ? doc(firestore, "wallets", walletData?.id)
+      ? doc(firestore, "wallets", walletData.id)
       : doc(collection(firestore, "wallets"));
 
     await setDoc(walletRef, walletToSave, { merge: true });
 
     return { success: true, data: { ...walletToSave, id: walletRef.id } };
   } catch (error: any) {
-    console.log("Error creating or updating wallet", error);
-    return { success: false, message: error?.message };
+    console.error("Error creating or updating wallet", error);
+    return { success: false, message: error?.message || "An error occurred" };
+  }
+};
+
+export const deleteWallet = async (walletId: string): Promise<ResponseType> => {
+  try {
+    const walletRef = doc(firestore, "wallets", walletId);
+    await deleteDoc(walletRef);
+    // Delete wallet from storage
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting wallet", error);
+    return { success: false, message: error?.message || "An error occurred" };
   }
 };
