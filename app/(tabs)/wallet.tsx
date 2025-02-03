@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect } from "react";
@@ -12,8 +13,26 @@ import Typo from "@/components/Typo";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import * as Icons from "phosphor-react-native";
+import useFetchData from "@/hooks/useFetchData";
+import { orderBy, where } from "firebase/firestore";
+import { useAuth } from "@/contexts/authContext";
+import { WalletType } from "@/types";
+import Loading from "@/components/Loading";
+import WalletListItem from "@/components/WalletListItem";
 
 const Wallet = () => {
+  const { user } = useAuth();
+  const {
+    data: wallets,
+    loading,
+    error,
+  } = useFetchData<WalletType>("wallets", [
+    where("uid", "==", user?.uid),
+    orderBy("created", "desc"),
+  ]);
+
+  console.log("Wallets:", wallets.length);
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -21,10 +40,13 @@ const Wallet = () => {
     }, [])
   );
 
-  const router=useRouter();
-  const getTotalBalance = () => {
-    return 1999;
-  };
+  const router = useRouter();
+
+  const getTotalBalance = () =>
+    wallets.reduce((acc, item) => {
+      return acc + (item.amount || 0);
+    }, 0);
+
   return (
     <ScreenWrapper style={{ backgroundColor: colors.black }}>
       <View style={styles.container}>
@@ -47,7 +69,9 @@ const Wallet = () => {
             <Typo size={20} fontWeight={"500"}>
               My wallets
             </Typo>
-            <TouchableOpacity onPress={()=>router.push('/(models)/walletModel')}>
+            <TouchableOpacity
+              onPress={() => router.push("/(models)/walletModel")}
+            >
               <Icons.PlusCircle
                 weight="fill"
                 color={colors.primary}
@@ -56,9 +80,16 @@ const Wallet = () => {
             </TouchableOpacity>
           </View>
 
-          {/* {Wallet List} */}
-
-
+          {loading && <Loading />}
+          <FlatList
+            contentContainerStyle={styles.listStyle}
+            data={wallets}
+            renderItem={({ item, index }) => {
+              return (
+                <WalletListItem index={index} item={item} router={router} />
+              );
+            }}
+          />
         </View>
       </View>
     </ScreenWrapper>
