@@ -12,7 +12,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import { useAuth } from "@/contexts/authContext";
 import ScreenWrapper from "@/components/ScreenWrapper";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { colors, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import * as Icons from "phosphor-react-native";
@@ -27,6 +27,7 @@ const Home = () => {
     }, [])
   );
   const { user } = useAuth();
+  const router=useRouter()
 
   const handelLogout = async () => {
     await signOut(auth);
@@ -67,6 +68,17 @@ const Home = () => {
           emptyListMessage="No Transactions added yet"
           title="Recent Transactions" />
         </ScrollView>
+        <Button
+          style={styles.floatingButton}
+          onPress={() => router.push("/(models)/transactionModel")}
+         
+        >
+          <Icons.Plus
+            size={verticalScale(24)}
+            color={colors.black}
+            weight="bold"
+          />
+        </Button>
       </View>
     </ScreenWrapper>
   );
