@@ -27,6 +27,13 @@ const StackLayout = () => {
           animation: "slide_from_bottom",
         }}
       />
+       <Stack.Screen
+        name="(models)/transactionModel"
+        options={{
+          presentation: "modal",
+          animation: "slide_from_bottom",
+        }}
+      />
     </Stack>
     
   );
