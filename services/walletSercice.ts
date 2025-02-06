@@ -17,8 +17,8 @@ export const createOrUpdateWallet = async (
       return { success: false, message: "Invalid wallet data" };
     }
 
-    let walletToSave = {...walletData,amount: walletData.amount ?? 0,
-      created: walletData.created ?? new Date(),};
+    let walletToSave = {...walletData,amount: walletData.amount ?walletData.amount:0,
+      created: walletData.created ?walletData.created:new Date(),};
 
     // Handle Image Upload
     if (walletData.image?.uri) {
