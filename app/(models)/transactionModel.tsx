@@ -1,14 +1,429 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { Alert, ScrollView, StyleSheet, View, Pressable } from "react-native";
+import React, { useEffect, useState } from "react";
+import { colors, radius, spacingX, spacingY } from "@/constants/theme";
+import { scale, verticalScale } from "@/utils/styling";
+import ModelWrapper from "@/components/ModelWrapper";
+import Header from "@/components/Header";
+import BackButton from "@/components/BackButton";
+import Typo from "@/components/Typo";
+import Input from "@/components/Input";
+import { TransactionType, WalletType } from "@/types";
+import Button from "@/components/Button";
+import { useAuth } from "@/contexts/authContext";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import ImageUpload from "@/components/ImageUpload";
+import { createOrUpdateWallet, deleteWallet } from "@/services/walletSercice";
+import * as Icon from "phosphor-react-native";
+import { Dropdown } from "react-native-element-dropdown";
+import { transactionTypes, expenseCategories } from "@/constants/data";
+import useFetchData from "@/hooks/useFetchData";
+import { orderBy, where } from "firebase/firestore";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 
 const transactionModel = () => {
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const oldTransaction: { name: string; image: string; id: string } =
+    useLocalSearchParams();
+
+  const [transaction, setTransaction] = useState<TransactionType>({
+    type: "expense",
+    amount: 0,
+    description: "",
+    category: "",
+    date: new Date(),
+    walletId: "",
+    image: null,
+  });
+  const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // useEffect(() => {
+  //   if (oldTransaction?.id) {
+  //     setTransaction({
+  //       ...transaction,
+  //       name: oldTransaction.name,
+  //       image: oldTransaction.image,
+  //     });
+  //   }
+  // }, [oldTransaction]);
+
+  const onDateChange = (
+    event: DateTimePickerEvent,
+    selectedDate: Date | undefined
+  ) => {
+    const currentDate = selectedDate || transaction.date;
+    setTransaction({ ...transaction, date: currentDate });
+    setShowDatePicker(false);
+  };
+
+  const onSubmit = async () => {
+    const { type, amount, description, category, date, walletId, image } =
+      transaction;
+    if (!walletId || !date || !amount || (type == "expense" && !category)) {
+      Alert.alert("Transaction", "Plese fill all the fields");
+      return;
+    }
+    console.log('good to go');
+    let transactionData:TransactionType={
+      type,
+      amount,
+      description,
+      category,
+      date,
+      walletId,
+      image,
+      uid:user?.uid
+
+    }
+    console.log('Trans data',transactionData);
+    
+    
+  };
+
+  const onDelete = async () => {
+    if (!oldTransaction?.id) return;
+    setLoading(true);
+    const res = await deleteWallet(oldTransaction.id);
+    setLoading(false);
+    if (res.success) {
+      router.back();
+    } else {
+      Alert.alert("Wallet", res.message || "Failed to delete wallet");
+    }
+  };
+
+  const showDeleteAlert = () => {
+    Alert.alert(
+      "Delete Wallet",
+      "Are you sure you want to delete this wallet? This action will remove all transactions related to this wallet.",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: () => onDelete(),
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
+  const {
+    data: wallets,
+    loading: walletLoading,
+    error: walletError,
+  } = useFetchData<WalletType>("wallets", [
+    where("uid", "==", user?.uid),
+    orderBy("created", "desc"),
+  ]);
+
   return (
-    <View>
-      <Text>transactionModel</Text>
-    </View>
-  )
-}
+    <ModelWrapper>
+      <View style={styles.container}>
+        <Header
+          title={oldTransaction?.id ? "Update Transaction" : "New Transaction"}
+          leftIcon={<BackButton />}
+          style={{
+            marginBottom: spacingY._10,
+          }}
+        />
+        {/* {Form} */}
+        <ScrollView
+          contentContainerStyle={styles.form}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.inputContainer}>
+            <Typo color={colors.neutral200} size={16}>
+              Type
+            </Typo>
+            <Dropdown
+              style={styles.dropdownContainer}
+              activeColor={colors.neutral700}
+              selectedTextStyle={styles.dropDownselectedText}
+              iconStyle={styles.dropDownIcon}
+              data={transactionTypes}
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
+              itemTextStyle={{ color: colors.white }}
+              itemContainerStyle={styles.dropDownItemContainer}
+              containerStyle={styles.dropDownListContainer}
+              placeholder={"Select type"}
+              value={transaction.type}
+              onChange={(item) => {
+                setTransaction({ ...transaction, type: item.value });
+              }}
+            />
+          </View>
 
-export default transactionModel
+          <View style={styles.inputContainer}>
+            <Typo color={colors.neutral200} size={16}>
+              Wallet
+            </Typo>
+            <Dropdown
+              style={styles.dropdownContainer}
+              activeColor={colors.neutral700}
+              selectedTextStyle={styles.dropDownselectedText}
+              iconStyle={styles.dropDownIcon}
+              data={wallets.map((wallet) => ({
+                label: `${wallet.name} (₹${wallet.amount})`,
+                value: wallet.id,
+              }))}
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
+              itemTextStyle={{ color: colors.white }}
+              itemContainerStyle={styles.dropDownItemContainer}
+              containerStyle={styles.dropDownListContainer}
+              placeholderStyle={styles.dropDownPlaceholder}
+              placeholder={"Select wallet"}
+              value={transaction.walletId}
+              onChange={(item) => {
+                setTransaction({ ...transaction, walletId: item.value || "" });
+              }}
+            />
+          </View>
 
-const styles = StyleSheet.create({})
+          {transaction.type === "expense" && (
+            <View style={styles.inputContainer}>
+              <Typo color={colors.neutral200} size={16}>
+                Expense Category
+              </Typo>
+              <Dropdown
+                style={styles.dropdownContainer}
+                activeColor={colors.neutral700}
+                selectedTextStyle={styles.dropDownselectedText}
+                iconStyle={styles.dropDownIcon}
+                data={Object.values(expenseCategories)}
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                itemTextStyle={{ color: colors.white }}
+                itemContainerStyle={styles.dropDownItemContainer}
+                containerStyle={styles.dropDownListContainer}
+                placeholderStyle={styles.dropDownPlaceholder}
+                placeholder={"Select category"}
+                value={transaction.category}
+                onChange={(item) => {
+                  setTransaction({
+                    ...transaction,
+                    category: item.value || "",
+                  });
+                }}
+              />
+            </View>
+          )}
+
+          <View style={styles.inputContainer}>
+            <Typo color={colors.neutral200} size={16}>
+              Date
+            </Typo>
+            {!showDatePicker && (
+              <Pressable
+                style={styles.dateInput}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Typo size={14}>
+                  {(transaction.date as Date).toLocaleDateString()}
+                </Typo>
+              </Pressable>
+            )}
+            {showDatePicker && (
+              <View>
+                <DateTimePicker
+                  themeVariant="dark"
+                  value={transaction.date as Date}
+                  textColor={colors.white}
+                  mode="date"
+                  display="spinner"
+                  onChange={onDateChange}
+                />
+              </View>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Typo color={colors.neutral200} size={16}>
+              Amount
+            </Typo>
+            <Input
+              // placeholder="Salary"
+              value={transaction.amount?.toString()}
+              keyboardType="numeric"
+              onChangeText={(value) =>
+                setTransaction({
+                  ...transaction,
+                  amount: Number(value.replace(/^0-9/g, "")),
+                })
+              }
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <View style={styles.flexRow}>
+              <Typo color={colors.neutral200} size={16}>
+                Description
+              </Typo>
+              <Typo color={colors.neutral500} size={14}>
+                (optional)
+              </Typo>
+            </View>
+            <Input
+              // placeholder="Salary"
+              value={transaction.description}
+              multiline
+              containerStyle={{
+                flexDirection: "row",
+                height: verticalScale(100),
+                alignItems: "flex-start",
+                paddingVertical: 15,
+              }}
+              onChangeText={(value) =>
+                setTransaction({
+                  ...transaction,
+                  description: value,
+                })
+              }
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <View style={styles.flexRow}>
+              <Typo color={colors.neutral200} size={16}>
+                Reciet
+              </Typo>
+              <Typo color={colors.neutral500} size={14}>
+                (optional)
+              </Typo>
+            </View>
+            <ImageUpload
+              placeholder="Upload Image"
+              file={transaction.image}
+              onSelect={(file) =>
+                setTransaction({
+                  ...transaction,
+                  image: file,
+                })
+              }
+              onClear={() =>
+                setTransaction({
+                  ...transaction,
+                  image: null,
+                })
+              }
+            />
+          </View>
+        </ScrollView>
+      </View>
+
+      <View style={styles.footer}>
+        {oldTransaction?.id && !loading && (
+          <Button
+            onPress={showDeleteAlert}
+            style={{
+              backgroundColor: colors.rose,
+              paddingHorizontal: spacingX._15,
+            }}
+          >
+            <Icon.Trash
+              color={colors.white}
+              size={verticalScale(24)}
+              weight="bold"
+            />
+          </Button>
+        )}
+        <Button onPress={onSubmit} loading={loading} style={{ flex: 1 }}>
+          <Typo color={colors.black} fontWeight={"700"}>
+            {oldTransaction?.id ? "Update Transaction" : "Add Transaction"}
+          </Typo>
+        </Button>
+      </View>
+    </ModelWrapper>
+  );
+};
+
+export default transactionModel;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: spacingY._20,
+  },
+  flexRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacingY._5,
+  },
+  footer: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingVertical: spacingX._20,
+    gap: scale(12),
+    paddingTop: spacingY._15,
+    borderTopColor: colors.neutral700,
+    marginBottom: spacingY._5,
+    borderWidth: 1,
+  },
+  form: {
+    gap: spacingY._20,
+    paddingVertical: spacingY._15,
+    paddingBottom: spacingY._40,
+  },
+  dropdownContainer: {
+    height: verticalScale(54),
+    borderWidth: 1,
+    borderColor: colors.neutral300,
+    paddingHorizontal: spacingX._15,
+    borderCurve: "continuous",
+  },
+  dropDownPlaceholder: {
+    color: colors.white,
+  },
+  dropDownselectedText: {
+    color: colors.white,
+    fontSize: verticalScale(14),
+  },
+  inputContainer: {
+    gap: spacingY._10,
+  },
+  dropDownIcon: {
+    height: verticalScale(30),
+    tintColor: colors.neutral300,
+  },
+  dropDownItemContainer: {
+    borderRadius: radius._15,
+    marginHorizontal: spacingX._7,
+  },
+  dropDownListContainer: {
+    backgroundColor: colors.neutral900,
+    borderRadius: radius._15,
+    borderCurve: "continuous",
+    marginHorizontal: spacingX._7,
+    top: 5,
+    borderColor: colors.neutral500,
+    shadowColor: colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 15,
+    elevation: 5,
+  },
+  dateInput: {
+    height: verticalScale(54),
+    borderWidth: 1,
+    borderColor: colors.neutral300,
+    paddingHorizontal: spacingX._15,
+    justifyContent: "center",
+    borderRadius: radius._15,
+  },
+});
