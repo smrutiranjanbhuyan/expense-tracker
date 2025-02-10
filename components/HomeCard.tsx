@@ -4,7 +4,35 @@ import Typo from "./Typo";
 import { colors, spacingY } from "@/constants/theme";
 import { scale, verticalScale } from "@/utils/styling";
 import * as Icons from "phosphor-react-native";
+import { useAuth } from "@/contexts/authContext";
+import useFetchData from "@/hooks/useFetchData";
+import { WalletType } from "@/types";
+import { orderBy, where } from "firebase/firestore";
 const HomeCard = () => {
+  const { user } = useAuth();
+  const {
+    data: wallets,
+    loading: walletLoading,
+    error,
+  } = useFetchData<WalletType>("wallets", [
+    where("uid", "==", user?.uid),
+    orderBy("created", "desc"),
+  ]);
+  const getTotals = () => {
+    return wallets.reduce(
+      (totals: any, item: WalletType) => {
+        totals.balance = totals.balance + Number(item.amount);
+        totals.income = totals.income + Number(item.totalIncome);
+        totals.expense = totals.expense + Number(item.totalExpenses);
+        return totals;
+      },
+      {
+        balance: 0,
+        income: 0,
+        expense: 0,
+      }
+    );
+  };
   return (
     <ImageBackground
       source={require("../assets/images/card.png")}
@@ -24,13 +52,12 @@ const HomeCard = () => {
             />
           </View>
           <Typo color={colors.black} size={30} fontWeight={"bold"}>
-            ₹12,345.67
+            ₹ {getTotals()?.balance?.toFixed(2)}
           </Typo>
         </View>
         {/* Expenses and incomes */}
 
         <View style={styles.stats}>
-
           {/* Income */}
           <View style={{ gap: verticalScale(5) }}>
             <View style={styles.incomeExpense}>
@@ -47,13 +74,13 @@ const HomeCard = () => {
             </View>
             <View style={{ alignSelf: "center" }}>
               <Typo size={17} color={colors.green} fontWeight={"600"}>
-                ₹12,345.67
+                ₹ {getTotals()?.income?.toFixed(2)}
               </Typo>
             </View>
           </View>
 
           {/* Expense */}
-             <View style={{ gap: verticalScale(5) }}>
+          <View style={{ gap: verticalScale(5) }}>
             <View style={styles.incomeExpense}>
               <View style={styles.statsIcon}>
                 <Icons.ArrowUp
@@ -68,7 +95,7 @@ const HomeCard = () => {
             </View>
             <View style={{ alignSelf: "center" }}>
               <Typo size={17} color={colors.rose} fontWeight={"600"}>
-                ₹125.67
+                ₹ {getTotals()?.expense?.toFixed(2)}
               </Typo>
             </View>
           </View>
