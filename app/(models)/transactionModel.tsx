@@ -21,6 +21,7 @@ import { orderBy, where } from "firebase/firestore";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { createOrUpdateTransactions } from "@/services/transactionService";
 
 const transactionModel = () => {
   const router = useRouter();
@@ -67,8 +68,8 @@ const transactionModel = () => {
       Alert.alert("Transaction", "Plese fill all the fields");
       return;
     }
-    console.log('good to go');
-    let transactionData:TransactionType={
+    // console.log("good to go");
+    let transactionData: TransactionType = {
       type,
       amount,
       description,
@@ -76,12 +77,18 @@ const transactionModel = () => {
       date,
       walletId,
       image,
-      uid:user?.uid
-
+      uid: user?.uid,
+    };
+    // console.log("Trans data", transactionData);
+    // Todo:Include transaction id
+    setLoading(true);
+    const res = await createOrUpdateTransactions(transactionData);
+    setLoading(false);
+    if (res?.success) {
+      router.back();
+    } else {
+      Alert.alert("Transaction", res.message);
     }
-    console.log('Trans data',transactionData);
-    
-    
   };
 
   const onDelete = async () => {
