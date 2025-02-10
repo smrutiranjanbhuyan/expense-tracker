@@ -18,6 +18,9 @@ import { verticalScale } from "@/utils/styling";
 import * as Icons from "phosphor-react-native";
 import HomeCard from "@/components/HomeCard";
 import TransactionList from "@/components/TransactionList";
+import { limit, orderBy, where } from "firebase/firestore";
+import useFetchData from "@/hooks/useFetchData";
+import { TransactionType, WalletType } from "@/types";
 
 const Home = () => {
   useFocusEffect(
@@ -27,8 +30,19 @@ const Home = () => {
     }, [])
   );
   const { user } = useAuth();
-  const router=useRouter()
+  const router=useRouter();
 
+  const constraints=[
+    where('uid','==',user?.uid),
+    orderBy('date','desc'),
+    limit(30)
+  ];
+
+  const {
+    data: recentTransactions,
+    loading: transactionLoading,
+    error,
+  } = useFetchData<TransactionType>("transactions", constraints);
   const handelLogout = async () => {
     await signOut(auth);
   };
@@ -63,8 +77,8 @@ const Home = () => {
           </View>
 
 
-          <TransactionList data={[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]} 
-          loading={false}
+          <TransactionList data={recentTransactions} 
+          loading={transactionLoading}
           emptyListMessage="No Transactions added yet"
           title="Recent Transactions" />
         </ScrollView>
