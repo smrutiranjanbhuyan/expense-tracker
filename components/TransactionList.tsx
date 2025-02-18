@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { TransactionItemProps, TransactionListType } from "@/types";
+import { TransactionItemProps, TransactionListType, TransactionType } from "@/types";
 import { verticalScale } from "@/utils/styling";
 import { colors, radius, spacingY } from "@/constants/theme";
 import Typo from "./Typo";
@@ -9,6 +9,7 @@ import Loading from "./Loading";
 import { expenseCategories, incomeCategory } from "@/constants/data";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { Timestamp } from "firebase/firestore";
+import { useRouter } from "expo-router";
 
 const TransactionList = ({
   data,
@@ -16,8 +17,24 @@ const TransactionList = ({
   loading,
   emptyListMessage,
 }: TransactionListType) => {
-  const handelClick = () => {
-    // Model
+  const router=useRouter();
+  const handelClick = (item:TransactionType) => {
+   
+    router.push({
+      pathname:'/(models)/transactionModel',
+      params:{
+        id:item?.id,
+        type:item?.type,
+        amount:item?.amount.toString(),
+        category:item?.category,
+        date:(item?.date as Timestamp)?.toDate().toISOString(),
+        description:item?.description,
+        image:item?.image,
+        uid:item?.uid,
+        walletId:item?.walletId,
+      }
+
+    })
   };
   return (
     <View style={styles.container}>
@@ -79,7 +96,7 @@ const TransactionItem = ({
         .damping(14)}
       style={styles.row}
     >
-      <TouchableOpacity style={styles.row} onPress={() => handleClick}>
+      <TouchableOpacity style={styles.row} onPress={() => handleClick(item)}>
         <View style={[styles.icon, { backgroundColor: category.bgColor }]}>
           {IconComponent && (
             <IconComponent
