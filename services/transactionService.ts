@@ -1,30 +1,59 @@
 import { firestore } from "@/config/firebase";
-import { TransactionType, WalletType ,ResponseType} from "@/types";
-import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { TransactionType, WalletType, ResponseType } from "@/types";
+import { collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { uploadFileToCloudinary } from "./imageService";
+import { createOrUpdateWallet } from "./walletSercice";
 
+// Create or Update Transaction
 export const createOrUpdateTransactions = async (
   transactionData: Partial<TransactionType>
 ): Promise<ResponseType> => {
   try {
     const { id, type, walletId, image, amount } = transactionData;
+
+    // Basic Validation
     if (!amount || amount <= 0 || !walletId || !type) {
       return {
         success: false,
         message: "Invalid transaction data",
       };
     }
+
+    // If ID exists, handle Update
     if (id) {
-      // Todo
+      const oldTransactionSnapshot = await getDoc(
+        doc(firestore, "transactions", id)
+      );
+      const oldTransaction = oldTransactionSnapshot.data() as TransactionType;
+
+      // Check if critical fields changed
+      const shouldRevertOriginal =
+        oldTransaction.type !== type ||
+        oldTransaction.amount !== amount ||
+        oldTransaction.walletId !== walletId;
+
+      if (shouldRevertOriginal) {
+        const res = await revertAndUpdateWallets(
+          oldTransaction,
+          amount,
+          type,
+          walletId
+        );
+        if (!res.success) {
+          return res;
+        }
+      }
     } else {
-      let res = await updateWalletForNewTransaction(
-        walletId!,
-        Number(amount!),
+      // Handle New Transaction
+      const res = await updateWalletForNewTransaction(
+        walletId,
+        Number(amount),
         type
       );
-      if (!res?.success) return res;
+      if (!res.success) return res;
     }
 
+    // Handle Image Upload
     if (image) {
       const imageUploadRes = await uploadFileToCloudinary(
         image,
@@ -39,6 +68,7 @@ export const createOrUpdateTransactions = async (
       transactionData.image = imageUploadRes.data;
     }
 
+    // Save Transaction
     const transactionRef = id
       ? doc(firestore, "transactions", id)
       : doc(collection(firestore, "transactions"));
@@ -46,13 +76,14 @@ export const createOrUpdateTransactions = async (
     await setDoc(transactionRef, transactionData, {
       merge: true,
     });
+
     return {
       success: true,
       message: "Transaction created or updated successfully",
       data: { ...transactionData, id: transactionRef.id },
     };
   } catch (err: any) {
-    console.log("Error creating transaction; ", err);
+    console.log("Error creating transaction: ", err);
     return {
       success: false,
       message: err?.message || "Error creating transaction",
@@ -60,6 +91,7 @@ export const createOrUpdateTransactions = async (
   }
 };
 
+// Update Wallet for New Transaction
 const updateWalletForNewTransaction = async (
   walletId: string,
   amount: number,
@@ -69,27 +101,29 @@ const updateWalletForNewTransaction = async (
     const walletRef = doc(firestore, "wallets", walletId);
     const walletSnapShot = await getDoc(walletRef);
     if (!walletSnapShot.exists()) {
-      console.log("Error updating wallet for new transaction ");
       return {
         success: false,
         message: "Wallet not found",
       };
     }
+
     const walletData = walletSnapShot.data() as WalletType;
-    if (type === "expense" && walletData.amount! - amount < 0) {
+    const updatedType = type === "income" ? "totalIncome" : "totalExpenses";
+    const updatedWalletAmount =
+      type === "income"
+        ? Number(walletData.amount) + amount
+        : Number(walletData.amount) - amount;
+
+    // Ensure wallet balance is not negative
+    if (type === "expense" && updatedWalletAmount < 0) {
       return {
         success: false,
-        message: "Selected wallet does not have sufficient balance",
+        message: "Insufficient balance for transaction",
       };
     }
 
-    const updatedType = type == "income" ? "totalIncome" : "totalExpenses";
-    const updatedWalletAmount =
-      type == "income"
-        ? Number(walletData.amount) + amount
-        : Number(walletData.amount) - amount;
     const updatedTotals =
-      type == "income"
+      type === "income"
         ? Number(walletData.totalIncome) + amount
         : Number(walletData.totalExpenses) + amount;
 
@@ -97,15 +131,132 @@ const updateWalletForNewTransaction = async (
       amount: updatedWalletAmount,
       [updatedType]: updatedTotals,
     });
+
     return {
       success: true,
       message: "Wallet updated successfully",
     };
   } catch (err: any) {
-    console.log("Error updating wallet for new transaction ", err);
+    console.log("Error updating wallet for new transaction: ", err);
     return {
       success: false,
       message: err?.message || "Error updating wallet",
+    };
+  }
+};
+
+// Revert and Update Wallets for Edited Transaction
+const revertAndUpdateWallets = async (
+  oldTransaction: TransactionType,
+  newTransactionAmount: number,
+  newTransactionType: string,
+  newWalletId: string
+): Promise<ResponseType> => {
+  try {
+    // Revert Old Transaction from Original Wallet
+    const originalWalletRef = doc(
+      firestore,
+      "wallets",
+      oldTransaction.walletId
+    );
+    const originalWalletSnapshot = await getDoc(originalWalletRef);
+    const originalWalletData = originalWalletSnapshot.data() as WalletType;
+
+    const revertType =
+      oldTransaction.type === "income" ? "totalIncome" : "totalExpenses";
+
+    const revertedWalletAmount =
+      oldTransaction.type === "income"
+        ? Number(originalWalletData.amount) - Number(oldTransaction.amount)
+        : Number(originalWalletData.amount) + Number(oldTransaction.amount);
+
+    await createOrUpdateWallet({
+      id: oldTransaction.walletId,
+      amount: revertedWalletAmount,
+      [revertType]:
+        Number(originalWalletData[revertType]) - Number(oldTransaction.amount),
+    });
+
+    // Update with the New Transaction Details
+    const newTransactionResult = await updateWalletForNewTransaction(
+      newWalletId,
+      newTransactionAmount,
+      newTransactionType
+    );
+
+    return newTransactionResult;
+  } catch (err: any) {
+    console.log("Error updating wallet for transaction: ", err);
+    return {
+      success: false,
+      message: err?.message || "Error updating wallet transaction",
+    };
+  }
+};
+
+export const deleteTransaction = async (
+  transactionId: string,
+  walletId: string
+) => {
+  try {
+    const transactionRef = doc(firestore, "transactions", transactionId);
+    const transactionSnapshot = await getDoc(
+     transactionRef
+    );
+
+    const transactionData = transactionSnapshot.data() as TransactionType;
+
+    if (!transactionSnapshot.exists()) {
+      return {
+        success: false,
+        message: "Transaction not found",
+      };
+    }
+    // Delete the transaction from the transactions collection
+
+    const transactionType = transactionData?.type;
+    const transactionAmount = transactionData?.amount;
+
+    // Fetch wallet
+
+    const walletRef = doc(firestore, "wallets", walletId);
+    const walletSnapShot = await getDoc(walletRef);
+    const walletData = walletSnapShot.data() as WalletType;
+
+    // Check if the transaction is in the wallet
+
+    const updateType =
+      transactionType === "income" ? "totalIncome" : "totalExpenses";
+    const newWalletAmount =
+      transactionType === "income"
+        ? walletData.amount! - transactionAmount
+        : walletData.amount! + transactionAmount;
+    
+        const newExpenseIncomeAmount = walletData[updateType] ! - transactionAmount;
+      
+        // below code is for updating the wallet amount in the database
+
+        if(transactionType == 'expense' && newWalletAmount < 0){
+          return {
+            success: false,
+            message: "Can not delete expense transaction as it will make wallet amount negative",
+          }
+
+        }
+        await createOrUpdateWallet({
+          id: walletId,
+          amount: newWalletAmount,
+          [updateType]: newExpenseIncomeAmount
+        })
+
+        deleteDoc(transactionRef)
+
+    return { success: true };
+  } catch (err: any) {
+    console.log("Error updating wallet for transaction: ", err);
+    return {
+      success: false,
+      message: err?.message || "Error updating wallet transaction",
     };
   }
 };
