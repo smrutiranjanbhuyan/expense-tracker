@@ -19,10 +19,6 @@ export const createOrUpdateWallet = async (
 
   let walletToSave = {
   ...walletData,
-  amount: walletData.amount ?? 0,
-  created: walletData.created ?? new Date(),
-  totalIncome: walletData.totalIncome ?? 0,
-  totalExpenses: walletData.totalExpenses ?? 0,
 };
     // Handle Image Upload
     if (walletData.image?.uri) {

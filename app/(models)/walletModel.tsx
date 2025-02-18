@@ -19,7 +19,8 @@ const walletModel = () => {
   const router = useRouter();
   const { user } = useAuth();
 
-  const oldWallet: { name: string; image: string; id: string } = useLocalSearchParams();
+  const oldWallet: { name: string; image: string; id: string } =
+    useLocalSearchParams();
   useEffect(() => {
     if (oldWallet?.id) {
       setWallet({
@@ -45,6 +46,10 @@ const walletModel = () => {
       name: name.trim(),
       image,
       uid: user?.uid,
+      amount: 0,
+      created: new Date(),
+      totalIncome: 0,
+      totalExpenses: 0,
     };
 
     if (oldWallet?.id) data.id = oldWallet.id;
@@ -64,16 +69,15 @@ const walletModel = () => {
   };
 
   const onDelete = async () => {
-   if(!oldWallet?.id) return;
+    if (!oldWallet?.id) return;
     setLoading(true);
-    const res=await deleteWallet(oldWallet.id);
+    const res = await deleteWallet(oldWallet.id);
     setLoading(false);
-    if(res.success){
+    if (res.success) {
       router.back();
-    }else{
+    } else {
       Alert.alert("Wallet", res.message || "Failed to delete wallet");
-    } 
-    
+    }
   };
 
   const showDeleteAlert = () => {
@@ -140,19 +144,19 @@ const walletModel = () => {
 
       <View style={styles.footer}>
         {oldWallet?.id && !loading && (
-         <Button
-         onPress={showDeleteAlert}
-         style={{
-           backgroundColor: colors.rose,
-           paddingHorizontal: spacingX._15,
-         }}
-       >
-         <Icon.Trash
-           color={colors.white}
-           size={verticalScale(24)}
-           weight="bold"
-         />
-       </Button>
+          <Button
+            onPress={showDeleteAlert}
+            style={{
+              backgroundColor: colors.rose,
+              paddingHorizontal: spacingX._15,
+            }}
+          >
+            <Icon.Trash
+              color={colors.white}
+              size={verticalScale(24)}
+              weight="bold"
+            />
+          </Button>
         )}
         <Button onPress={onSubmit} loading={loading} style={{ flex: 1 }}>
           <Typo color={colors.black} fontWeight={"700"}>
