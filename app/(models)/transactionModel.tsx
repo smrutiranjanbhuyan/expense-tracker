@@ -21,14 +21,25 @@ import { orderBy, where } from "firebase/firestore";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { createOrUpdateTransactions } from "@/services/transactionService";
+import { createOrUpdateTransactions, deleteTransaction } from "@/services/transactionService";
 
 const transactionModel = () => {
   const router = useRouter();
   const { user } = useAuth();
 
-  const oldTransaction: { name: string; image: string; id: string } =
-    useLocalSearchParams();
+  type parameterType = {
+    id: string;
+    type: string;
+    amount: string;
+    category: string;
+    date: string;
+    description: string;
+    image: any;
+    uid: string;
+    walletId: string;
+  };
+
+  const oldTransaction: parameterType = useLocalSearchParams();
 
   const [transaction, setTransaction] = useState<TransactionType>({
     type: "expense",
@@ -39,18 +50,23 @@ const transactionModel = () => {
     walletId: "",
     image: null,
   });
+
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // useEffect(() => {
-  //   if (oldTransaction?.id) {
-  //     setTransaction({
-  //       ...transaction,
-  //       name: oldTransaction.name,
-  //       image: oldTransaction.image,
-  //     });
-  //   }
-  // }, [oldTransaction]);
+  useEffect(() => {
+    if (oldTransaction?.id) {
+      setTransaction({
+        type: oldTransaction?.type,
+        amount: Number(oldTransaction?.amount),
+        description: oldTransaction?.description || "",
+        category: oldTransaction?.category || "",
+        date: new Date(oldTransaction?.date),
+        walletId: oldTransaction.walletId,
+        image: oldTransaction?.image || null,
+      });
+    }
+  }, []);
 
   const onDateChange = (
     event: DateTimePickerEvent,
@@ -76,11 +92,15 @@ const transactionModel = () => {
       category,
       date,
       walletId,
-      image,
+      image: image? image : null,
       uid: user?.uid,
     };
     // console.log("Trans data", transactionData);
     // Todo:Include transaction id
+
+    if(oldTransaction?.id){
+      transactionData.id=oldTransaction.id
+    }
     setLoading(true);
     const res = await createOrUpdateTransactions(transactionData);
     setLoading(false);
@@ -94,19 +114,19 @@ const transactionModel = () => {
   const onDelete = async () => {
     if (!oldTransaction?.id) return;
     setLoading(true);
-    const res = await deleteWallet(oldTransaction.id);
+    const res = await deleteTransaction(oldTransaction?.id, oldTransaction?.walletId);
     setLoading(false);
     if (res.success) {
       router.back();
     } else {
-      Alert.alert("Wallet", res.message || "Failed to delete wallet");
+      Alert.alert("Transaction", res.message || "Failed to delete transaction");
     }
   };
 
   const showDeleteAlert = () => {
     Alert.alert(
-      "Delete Wallet",
-      "Are you sure you want to delete this wallet? This action will remove all transactions related to this wallet.",
+      "Delete Transaction",
+      "Are you sure you want to delete this transaction?",
       [
         {
           text: "Cancel",
