@@ -1,8 +1,23 @@
 import { firestore } from "@/config/firebase";
 import { TransactionType, WalletType, ResponseType } from "@/types";
-import { collection, deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { uploadFileToCloudinary } from "./imageService";
 import { createOrUpdateWallet } from "./walletSercice";
+import { gatLast7Days } from "@/utils/common";
+import { scale } from "@/utils/styling";
+import { colors } from "@/constants/theme";
 
 // Create or Update Transaction
 export const createOrUpdateTransactions = async (
@@ -200,9 +215,7 @@ export const deleteTransaction = async (
 ) => {
   try {
     const transactionRef = doc(firestore, "transactions", transactionId);
-    const transactionSnapshot = await getDoc(
-     transactionRef
-    );
+    const transactionSnapshot = await getDoc(transactionRef);
 
     const transactionData = transactionSnapshot.data() as TransactionType;
 
@@ -231,25 +244,25 @@ export const deleteTransaction = async (
       transactionType === "income"
         ? walletData.amount! - transactionAmount
         : walletData.amount! + transactionAmount;
-    
-        const newExpenseIncomeAmount = walletData[updateType] ! - transactionAmount;
-      
-        // below code is for updating the wallet amount in the database
 
-        if(transactionType == 'expense' && newWalletAmount < 0){
-          return {
-            success: false,
-            message: "Can not delete expense transaction as it will make wallet amount negative",
-          }
+    const newExpenseIncomeAmount = walletData[updateType]! - transactionAmount;
 
-        }
-        await createOrUpdateWallet({
-          id: walletId,
-          amount: newWalletAmount,
-          [updateType]: newExpenseIncomeAmount
-        })
+    // below code is for updating the wallet amount in the database
 
-        deleteDoc(transactionRef)
+    if (transactionType == "expense" && newWalletAmount < 0) {
+      return {
+        success: false,
+        message:
+          "Can not delete expense transaction as it will make wallet amount negative",
+      };
+    }
+    await createOrUpdateWallet({
+      id: walletId,
+      amount: newWalletAmount,
+      [updateType]: newExpenseIncomeAmount,
+    });
+
+    deleteDoc(transactionRef);
 
     return { success: true };
   } catch (err: any) {
@@ -260,3 +273,71 @@ export const deleteTransaction = async (
     };
   }
 };
+
+export const fetchWeeklyStats = async (uid: string): Promise<ResponseType> => {
+  try {
+    const db = firestore;
+    const today = new Date();
+    const sevenDayAgo = new Date(today);
+    sevenDayAgo.setDate(sevenDayAgo.getDate() - 7);
+
+    const transactionQuery = query(
+      collection(db, "transactions"),
+      where("date", ">=", Timestamp.fromDate(sevenDayAgo)),
+      where("date", "<=", Timestamp.fromDate(today)),
+      orderBy("date", "desc"),
+      where("uid", "==", uid)
+    );
+
+    const querySnapshot = await getDocs(transactionQuery);
+    const weeklyData = gatLast7Days();
+    const transactions: TransactionType[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const transaction = doc.data() as TransactionType;
+      transaction.id = doc.id;
+      transactions.push(transaction);
+
+      const transactionDate = (transaction.date as Timestamp)
+        .toDate()
+        .toISOString()
+        .split("T")[0];
+      const dayData = weeklyData.find((day) => day.date == transactionDate);
+      if (dayData) {
+        if (transaction.type == "income") {
+          dayData.income += transaction.amount;
+        }
+        if (transaction.type == "expense") {
+          dayData.expense += transaction.amount;
+        }
+      }
+    });
+    const stats = weeklyData.flatMap((day) => [
+      {
+        value: day.income,
+        label: day.day,
+        spacing: scale(4),
+        labelWidth: scale(30),
+        frontColor: colors.primary,
+      },
+      {
+        value: day.expense,
+        frontColor: colors.rose,
+      },
+    ]);
+    return {
+      success: true,
+      data: {
+        stats,
+        transactions,
+      },
+    };
+  } catch (err: any) {
+    console.log("Error updating wallet for transaction: ", err);
+    return {
+      success: false,
+      message: "Error fetching weekly stats",
+    };
+  }
+};
+

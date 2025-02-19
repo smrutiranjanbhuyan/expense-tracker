@@ -1,4 +1,11 @@
-import { ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import { useFocusEffect } from "expo-router";
@@ -10,9 +17,11 @@ import { BarChart } from "react-native-gifted-charts";
 import Typo from "@/components/Typo";
 import Loading from "@/components/Loading";
 import { useAuth } from "@/contexts/authContext";
+import { fetchWeeklyStats } from "@/services/transactionService";
+import TransactionList from "@/components/TransactionList";
 
 const Stastics = () => {
-  const {user}=useAuth();
+  const { user } = useAuth();
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -21,100 +30,8 @@ const Stastics = () => {
   );
   const [chatLoading, setChatLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [chartData, setChartData] = useState([
-    {
-      value: Math.floor(Math.random() * 100),
-      label: "Mon",
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.primary,
-    }, // Income
-    {
-      value: Math.floor(Math.random() * 100),
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.rose,
-    }, // Expense
-    { spacing: scale(5), labelWidth: scale(20) }, // Blank bar
-
-    {
-      value: Math.floor(Math.random() * 100),
-      label: "Tue",
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.primary,
-    }, // Income
-    {
-      value: Math.floor(Math.random() * 100),
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.rose,
-    }, // Expense
-    { spacing: scale(5), labelWidth: scale(20) }, // Blank bar
-
-    {
-      value: Math.floor(Math.random() * 100),
-      label: "Wed",
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.primary,
-    }, // Income
-    {
-      value: Math.floor(Math.random() * 100),
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.rose,
-    }, // Expense
-    { spacing: scale(5), labelWidth: scale(20) }, // Blank bar
-
-    {
-      value: Math.floor(Math.random() * 100),
-      label: "Thu",
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.primary,
-    }, // Income
-    {
-      value: Math.floor(Math.random() * 100),
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.rose,
-    }, // Expense
-    { spacing: scale(5), labelWidth: scale(20) }, // Blank bar
-
-    {
-      value: Math.floor(Math.random() * 100),
-      label: "Fri",
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.primary,
-    }, // Income
-    { spacing: scale(5), labelWidth: scale(20) }, // Blank bar
-
-    {
-      value: Math.floor(Math.random() * 100),
-      label: "Sat",
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.rose,
-    }, // Expense
-    { spacing: scale(5), labelWidth: scale(20) }, // Blank bar
-
-    {
-      value: Math.floor(Math.random() * 100),
-      label: "Sun",
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.primary,
-    }, // Income
-    {
-      value: Math.floor(Math.random() * 100),
-      spacing: scale(5),
-      labelWidth: scale(20),
-      frontColor: colors.rose,
-    }, // Expense
-    { spacing: scale(5), labelWidth: scale(20) }, // Blank bar
-  ]);
+  const [chartData, setChartData] = useState([]);
+  const [transactions, setTransactions] = useState([])
 
   useEffect(() => {
     if (activeIndex == 0) {
@@ -129,7 +46,15 @@ const Stastics = () => {
   }, [activeIndex]);
 
   const getWeeklyStats = async () => {
-    //
+    setChatLoading(true);
+    let res = await fetchWeeklyStats(user?.uid as string);
+    setChatLoading(false);
+    if (res.success) {
+      setChartData(res?.data?.stats);
+      setTransactions(res?.data?.transactions);
+    } else {
+      Alert.alert("Error", res.message);
+    }
   };
   const getMonthlyStats = async () => {
     //
@@ -199,6 +124,14 @@ const Stastics = () => {
                 <Loading color={colors.white} />
               </View>
             )}
+          </View>
+          {/* {Display trans} */}
+          <View>
+            <TransactionList
+            title="Transactions"
+            emptyListMessage="No transactions found"
+            data={transactions}
+            />
           </View>
         </ScrollView>
       </View>
