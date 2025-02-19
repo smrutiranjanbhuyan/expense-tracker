@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { uploadFileToCloudinary } from "./imageService";
 import { createOrUpdateWallet } from "./walletSercice";
-import { gatLast7Days, getLast12Months } from "@/utils/common";
+import { gatLast7Days, getLast12Months, getYearsRange } from "@/utils/common";
 import { scale } from "@/utils/styling";
 import { colors } from "@/constants/theme";
 
@@ -346,7 +346,7 @@ export const fetchMonthlyStats = async (uid: string): Promise<ResponseType> => {
     const db = firestore;
     const today = new Date();
     const twelveMonthsAgo = new Date(today);
-    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12); 
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
     const transactionQuery = query(
       collection(db, "transactions"),
@@ -369,7 +369,7 @@ export const fetchMonthlyStats = async (uid: string): Promise<ResponseType> => {
         .toDate()
         .toISOString()
         .split("T")[0]
-        .slice(0, 7); 
+        .slice(0, 7);
 
       const monthData = monthlyData.find((month) =>
         month.fullDate.startsWith(transactionDate)
@@ -410,6 +410,80 @@ export const fetchMonthlyStats = async (uid: string): Promise<ResponseType> => {
     return {
       success: false,
       message: "Error fetching monthly stats",
+    };
+  }
+};
+
+export const fetchYearlyStats = async (uid: string): Promise<ResponseType> => {
+  try {
+    const db = firestore;
+    const today = new Date();
+    const startYear = today.getFullYear() - 4;
+    const endYear = today.getFullYear();
+
+    const transactionQuery = query(
+      collection(db, "transactions"),
+      where("date", ">=", Timestamp.fromDate(new Date(`${startYear}-01-01`))),
+      where("date", "<=", Timestamp.fromDate(today)),
+      orderBy("date", "desc"),
+      where("uid", "==", uid)
+    );
+
+    const querySnapshot = await getDocs(transactionQuery);
+    const yearlyData = getYearsRange(startYear, endYear);
+    const transactions: TransactionType[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const transaction = doc.data() as TransactionType;
+      transaction.id = doc.id;
+      transactions.push(transaction);
+
+      const transactionYear = (transaction.date as Timestamp)
+        .toDate()
+        .getFullYear()
+        .toString();
+
+      const yearData = yearlyData.find(
+        (year: { year: string }) => year.year === transactionYear
+      );
+      if (yearData) {
+        if (transaction.type === "income") {
+          yearData.income += transaction.amount;
+        }
+        if (transaction.type === "expense") {
+          yearData.expense += transaction.amount;
+        }
+      }
+    });
+
+    const stats = yearlyData.flatMap(
+      (year: { year: string; income: number; expense: number }) => [
+        {
+          value: year.income,
+          label: year.year,
+          spacing: scale(8),
+          labelWidth: scale(40),
+          frontColor: colors.primary,
+        },
+        {
+          value: year.expense,
+          frontColor: colors.rose,
+        },
+      ]
+    );
+
+    return {
+      success: true,
+      data: {
+        stats,
+        transactions,
+      },
+    };
+  } catch (err: any) {
+    console.log("Error fetching yearly stats: ", err);
+    return {
+      success: false,
+      message: "Error fetching yearly stats",
     };
   }
 };
