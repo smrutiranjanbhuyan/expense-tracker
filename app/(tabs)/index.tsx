@@ -59,7 +59,7 @@ const Home = () => {
               {user?.name}
             </Typo>
           </View>
-          <TouchableOpacity style={styles.searchItem}>
+          <TouchableOpacity style={styles.searchItem} onPress={()=>router.push('/(models)/searchModel')}>
             <Icons.MagnifyingGlass
               size={verticalScale(22)}
               color={colors.neutral200}

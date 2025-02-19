@@ -34,6 +34,13 @@ const StackLayout = () => {
           animation: "slide_from_bottom",
         }}
       />
+       <Stack.Screen
+        name="(models)/searchModel"
+        options={{
+          presentation: "modal",
+          animation: "slide_from_bottom",
+        }}
+      />
     </Stack>
     
   );
