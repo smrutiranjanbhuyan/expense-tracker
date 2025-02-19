@@ -7,29 +7,48 @@ import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 import Typo from "@/components/Typo";
 import Input from "@/components/Input";
-import { WalletType } from "@/types";
+import { TransactionType, WalletType } from "@/types";
 import Button from "@/components/Button";
 import { useAuth } from "@/contexts/authContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import ImageUpload from "@/components/ImageUpload";
 import { createOrUpdateWallet, deleteWallet } from "@/services/walletSercice";
 import * as Icon from "phosphor-react-native";
+import { limit, orderBy, where } from "firebase/firestore";
+import useFetchData from "@/hooks/useFetchData";
+import TransactionList from "@/components/TransactionList";
 
 const searchModel = () => {
   const router = useRouter();
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(false);
-const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
+  const constraints = [where("uid", "==", user?.uid), orderBy("date", "desc")];
 
+  const {
+    data: allTransactions,
+    loading: transactionLoading,
+    error,
+  } = useFetchData<TransactionType>("transactions", constraints);
 
+  const filteredTransactions = allTransactions?.filter((item) => {
+    if (search.length > 1) {
+      return (
+        item.category?.toLowerCase().includes(search.toLowerCase()) ||
+        item.type?.toLowerCase().includes(search.toLowerCase()) ||
+        item.description?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    return true;
+  });
 
   return (
-    <ModelWrapper style={{backgroundColor:colors.neutral300}}>
+    <ModelWrapper style={{ backgroundColor: colors.neutral900 }}>
       <View style={styles.container}>
         <Header
-          title={'Search'}
+          title={"Search"}
           leftIcon={<BackButton />}
           style={{
             marginBottom: spacingY._10,
@@ -37,24 +56,30 @@ const [search, setSearch] = useState('');
         />
         {/* {Form} */}
 
-        <ScrollView contentContainerStyle={styles.form}>
+        <ScrollView
+          contentContainerStyle={styles.form}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.inputContainer}>
-            
             <Input
               placeholder="books"
               value={search}
               containerStyle={{
-                backgroundColor:colors.neutral800
+                backgroundColor: colors.neutral800,
               }}
               placeholderTextColor={colors.neutral400}
               onChangeText={(value) => setSearch(value)}
             />
           </View>
-      
+          <View>
+            <TransactionList
+              loading={transactionLoading}
+              data={filteredTransactions}
+              emptyListMessage="No transactions match your search"
+            />
+          </View>
         </ScrollView>
       </View>
-
-   
     </ModelWrapper>
   );
 };
