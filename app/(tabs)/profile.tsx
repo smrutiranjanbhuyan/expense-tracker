@@ -47,7 +47,7 @@ const Profile = () => {
     {
       title: "Privacy Policy",
       icon: <Icon.Lock size={26} color={colors.white} weight="fill" />,
-      // routeName: "/(models)/profileModel",
+      routeName: "/(models)/privecyPolicyModel",
       bgColor: colors.neutral600,
     },
     {
