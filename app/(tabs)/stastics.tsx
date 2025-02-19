@@ -17,7 +17,7 @@ import { BarChart } from "react-native-gifted-charts";
 import Typo from "@/components/Typo";
 import Loading from "@/components/Loading";
 import { useAuth } from "@/contexts/authContext";
-import { fetchWeeklyStats } from "@/services/transactionService";
+import { fetchMonthlyStats, fetchWeeklyStats } from "@/services/transactionService";
 import TransactionList from "@/components/TransactionList";
 
 const Stastics = () => {
@@ -57,7 +57,15 @@ const Stastics = () => {
     }
   };
   const getMonthlyStats = async () => {
-    //
+    setChatLoading(true);
+    let res = await fetchMonthlyStats(user?.uid as string);
+    setChatLoading(false);
+    if (res.success) {
+      setChartData(res?.data?.stats);
+      setTransactions(res?.data?.transactions);
+    } else {
+      Alert.alert("Error", res.message);
+    }
   };
   const getYearlyStats = async () => {
     //

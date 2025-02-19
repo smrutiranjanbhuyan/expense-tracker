@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { uploadFileToCloudinary } from "./imageService";
 import { createOrUpdateWallet } from "./walletSercice";
-import { gatLast7Days } from "@/utils/common";
+import { gatLast7Days, getLast12Months } from "@/utils/common";
 import { scale } from "@/utils/styling";
 import { colors } from "@/constants/theme";
 
@@ -341,3 +341,75 @@ export const fetchWeeklyStats = async (uid: string): Promise<ResponseType> => {
   }
 };
 
+export const fetchMonthlyStats = async (uid: string): Promise<ResponseType> => {
+  try {
+    const db = firestore;
+    const today = new Date();
+    const twelveMonthsAgo = new Date(today);
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12); 
+
+    const transactionQuery = query(
+      collection(db, "transactions"),
+      where("date", ">=", Timestamp.fromDate(twelveMonthsAgo)),
+      where("date", "<=", Timestamp.fromDate(today)),
+      orderBy("date", "desc"),
+      where("uid", "==", uid)
+    );
+
+    const querySnapshot = await getDocs(transactionQuery);
+    const monthlyData = getLast12Months();
+    const transactions: TransactionType[] = [];
+
+    querySnapshot.forEach((doc) => {
+      const transaction = doc.data() as TransactionType;
+      transaction.id = doc.id;
+      transactions.push(transaction);
+
+      const transactionDate = (transaction.date as Timestamp)
+        .toDate()
+        .toISOString()
+        .split("T")[0]
+        .slice(0, 7); 
+
+      const monthData = monthlyData.find((month) =>
+        month.fullDate.startsWith(transactionDate)
+      );
+      if (monthData) {
+        if (transaction.type === "income") {
+          monthData.income += transaction.amount;
+        }
+        if (transaction.type === "expense") {
+          monthData.expense += transaction.amount;
+        }
+      }
+    });
+
+    const stats = monthlyData.flatMap((month) => [
+      {
+        value: month.income,
+        label: month.month,
+        spacing: scale(6),
+        labelWidth: scale(35),
+        frontColor: colors.primary,
+      },
+      {
+        value: month.expense,
+        frontColor: colors.rose,
+      },
+    ]);
+
+    return {
+      success: true,
+      data: {
+        stats,
+        transactions,
+      },
+    };
+  } catch (err: any) {
+    console.log("Error fetching monthly stats: ", err);
+    return {
+      success: false,
+      message: "Error fetching monthly stats",
+    };
+  }
+};
