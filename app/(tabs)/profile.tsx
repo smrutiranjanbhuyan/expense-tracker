@@ -41,7 +41,7 @@ const Profile = () => {
     {
       title: "Settings",
       icon: <Icon.GearSix size={26} color={colors.white} weight="fill" />,
-      // routeName: "/(models)/profileModel",
+      routeName: "/(models)/settingsModel",
       bgColor: "#059669",
     },
     {
