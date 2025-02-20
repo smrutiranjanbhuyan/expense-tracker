@@ -41,6 +41,14 @@ const StackLayout = () => {
           animation: "slide_from_bottom",
         }}
       />
+       <Stack.Screen
+        name="(models)/privecyPolicyModel"
+        options={{
+          presentation: "modal",
+          animation: "slide_from_bottom",
+        }}
+      />
+      
     </Stack>
     
   );
