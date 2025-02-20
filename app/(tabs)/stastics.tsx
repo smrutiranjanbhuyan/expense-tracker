@@ -17,8 +17,13 @@ import { BarChart } from "react-native-gifted-charts";
 import Typo from "@/components/Typo";
 import Loading from "@/components/Loading";
 import { useAuth } from "@/contexts/authContext";
-import { fetchMonthlyStats, fetchWeeklyStats, fetchYearlyStats } from "@/services/transactionService";
+import {
+  fetchMonthlyStats,
+  fetchWeeklyStats,
+  fetchYearlyStats,
+} from "@/services/transactionService";
 import TransactionList from "@/components/TransactionList";
+import { TransactionType } from "@/types";
 
 const Stastics = () => {
   const { user } = useAuth();
@@ -31,7 +36,7 @@ const Stastics = () => {
   const [chatLoading, setChatLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [chartData, setChartData] = useState([]);
-  const [transactions, setTransactions] = useState([])
+  const [transactions, setTransactions] = useState<TransactionType[]>([]);
 
   useEffect(() => {
     if (activeIndex == 0) {
@@ -78,6 +83,28 @@ const Stastics = () => {
       Alert.alert("Error", res.message);
     }
   };
+  const maxValue = Math.max(...transactions.map((item) => item.amount));
+
+  const noOfSections = 3;
+  
+  const formatNumber = (num: number) => {
+    if (num >= 1_000_000) {
+      return `${(num / 1_000_000).toFixed(1)}M`; 
+    } else if (num >= 1_000) {
+      return `${(num / 1_000).toFixed(1)}K`; 
+    } else {
+      return num.toFixed(1); 
+    }
+  };
+  
+  const yAxisLabels = Array.from(
+    { length: noOfSections + 1 },
+    (_, i) => `₹${formatNumber((maxValue / noOfSections) * i)}`
+  );
+  
+  console.log(yAxisLabels);
+  
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
@@ -121,16 +148,15 @@ const Stastics = () => {
                 yAxisThickness={0}
                 xAxisThickness={0}
                 yAxisLabelWidth={
-                  [1, 2].includes(activeIndex) ? scale(38) : scale(35)
+                  [1, 2].includes(activeIndex) ? scale(65) : scale(60)
                 }
                 yAxisTextStyle={{ color: colors.neutral350 }}
                 xAxisLabelTextStyle={{
                   color: colors.neutral350,
                   fontSize: verticalScale(12),
                 }}
-                noOfSections={3}
-                // hideYAxisText
-                // maxValue={100}
+                noOfSections={noOfSections}
+                yAxisLabelTexts={yAxisLabels}
               />
             ) : (
               <View style={styles.noChat} />
@@ -144,9 +170,9 @@ const Stastics = () => {
           {/* {Display trans} */}
           <View>
             <TransactionList
-            title="Transactions"
-            emptyListMessage="No transactions found"
-            data={transactions}
+              title="Transactions"
+              emptyListMessage="No transactions found"
+              data={transactions}
             />
           </View>
         </ScrollView>
