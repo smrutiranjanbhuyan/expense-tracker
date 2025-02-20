@@ -102,7 +102,7 @@ const Stastics = () => {
     (_, i) => `₹${formatNumber((maxValue / noOfSections) * i)}`
   );
   
-  console.log(yAxisLabels);
+
   
 
   return (
