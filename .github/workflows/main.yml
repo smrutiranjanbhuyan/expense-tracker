@@ -32,4 +32,4 @@ jobs:
         run: eas build --platform android --profile preview --non-interactive --no-wait
 
       - name: Get Build URL
-        run: echo "Download APK from Expo: $(eas build:list --limit 1 --json | jq -r '.[0].artifacts.buildUrl')"
+        run: echo "Download APK from Expo "
