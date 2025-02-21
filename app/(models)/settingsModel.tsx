@@ -20,7 +20,7 @@ import { useRouter } from "expo-router";
 import BackButton from "@/components/BackButton";
 import { auth } from "@/config/firebase";
 import { sendEmailVerification } from "firebase/auth";
-import { useCurrency } from "@/contexts/currencyContext"; // Import your currency context
+import { useCurrency } from "@/contexts/currencyContext"; 
 import { currencyList } from "@/constants/data";
 
 const SettingsModel = () => {
@@ -123,6 +123,12 @@ const SettingsModel = () => {
   // Define settings options
   const settingsOptions = [
     {
+      title: "Preferred Currency",
+      icon: <Icon.CurrencyDollarSimple size={24} color={colors.white} />,
+      onPress: () => setModalVisible(true),
+      bgColor: "#6366f1",
+    },
+    {
       title: emailVerified ? "Account verified" : "Please verify your account",
       icon: emailVerified ? (
         <Icon.CheckCircle size={24} color={colors.white} />
@@ -144,12 +150,7 @@ const SettingsModel = () => {
       onPress: deleteAccount,
       bgColor: "#e11d48",
     },
-    {
-      title: "Preferred Currency",
-      icon: <Icon.CurrencyDollarSimple size={24} color={colors.white} />,
-      onPress: () => setModalVisible(true),
-      bgColor: "#6366f1",
-    },
+    
   ];
 
   // Filter currencies based on search query
