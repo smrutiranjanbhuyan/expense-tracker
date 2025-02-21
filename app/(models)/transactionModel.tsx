@@ -2,16 +2,18 @@ import { Alert, ScrollView, StyleSheet, View, Pressable } from "react-native";
 import React, { useEffect, useState } from "react";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { scale, verticalScale } from "@/utils/styling";
-import ModelWrapper from "@/components/ModelWrapper";
-import Header from "@/components/Header";
-import BackButton from "@/components/BackButton";
-import Typo from "@/components/Typo";
-import Input from "@/components/Input";
+import {
+  ModelWrapper,
+  Header,
+  BackButton,
+  Typo,
+  Button,
+  ImageUpload,
+  Input
+} from "@/components";
 import { TransactionType, WalletType } from "@/types";
-import Button from "@/components/Button";
 import { useAuth } from "@/contexts/authContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import ImageUpload from "@/components/ImageUpload";
 import { createOrUpdateWallet, deleteWallet } from "@/services/walletSercice";
 import * as Icon from "phosphor-react-native";
 import { Dropdown } from "react-native-element-dropdown";
@@ -21,7 +23,10 @@ import { orderBy, where } from "firebase/firestore";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { createOrUpdateTransactions, deleteTransaction } from "@/services/transactionService";
+import {
+  createOrUpdateTransactions,
+  deleteTransaction,
+} from "@/services/transactionService";
 import { useCurrency } from "@/contexts/currencyContext";
 
 const transactionModel = () => {
@@ -94,14 +99,14 @@ const transactionModel = () => {
       category,
       date,
       walletId,
-      image: image? image : null,
+      image: image ? image : null,
       uid: user?.uid,
     };
     // console.log("Trans data", transactionData);
     // Todo:Include transaction id
 
-    if(oldTransaction?.id){
-      transactionData.id=oldTransaction.id
+    if (oldTransaction?.id) {
+      transactionData.id = oldTransaction.id;
     }
     setLoading(true);
     const res = await createOrUpdateTransactions(transactionData);
@@ -116,7 +121,10 @@ const transactionModel = () => {
   const onDelete = async () => {
     if (!oldTransaction?.id) return;
     setLoading(true);
-    const res = await deleteTransaction(oldTransaction?.id, oldTransaction?.walletId);
+    const res = await deleteTransaction(
+      oldTransaction?.id,
+      oldTransaction?.walletId
+    );
     setLoading(false);
     if (res.success) {
       router.back();
