@@ -7,22 +7,19 @@ import {
   View,
 } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import ScreenWrapper from "@/components/ScreenWrapper";
+import {ScreenWrapper,Typo,Button,HomeCard,TransactionList,Header,Loading} from '@/components'
 import { useFocusEffect } from "expo-router";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { scale, verticalScale } from "@/utils/styling";
-import Header from "@/components/Header";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { BarChart } from "react-native-gifted-charts";
-import Typo from "@/components/Typo";
-import Loading from "@/components/Loading";
+
 import { useAuth } from "@/contexts/authContext";
 import {
   fetchMonthlyStats,
   fetchWeeklyStats,
   fetchYearlyStats,
 } from "@/services/transactionService";
-import TransactionList from "@/components/TransactionList";
 import { TransactionType } from "@/types";
 import { useCurrency } from "@/contexts/currencyContext";
 
