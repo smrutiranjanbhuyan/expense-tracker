@@ -10,11 +10,10 @@ import {
 import React, { useEffect, useState } from "react";
 import { colors, spacingX, spacingY } from "@/constants/theme";
 import { scale, verticalScale } from "@/utils/styling";
-import {ModelWrapper,Header,BackButton,Typo,Button} from '@/components'
+import {ModelWrapper,Header,BackButton,Typo,Button,Input} from '@/components'
 import { Image } from "expo-image";
 import { getProfileImage } from "@/services/imageService";
 import * as Icon from "phosphor-react-native";
-import Input from "@/components/Input";
 import { UserDataType } from "@/types";
 import { useAuth } from "@/contexts/authContext";
 import { updateUser } from "@/services/userService";
