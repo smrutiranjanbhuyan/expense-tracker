@@ -8,8 +8,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect } from "react";
-import ScreenWrapper from "@/components/ScreenWrapper";
-import Typo from "@/components/Typo";
+import {ScreenWrapper,Typo,Loading,WalletListItem} from '@/components'
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import * as Icons from "phosphor-react-native";
@@ -17,8 +16,6 @@ import useFetchData from "@/hooks/useFetchData";
 import { orderBy, where } from "firebase/firestore";
 import { useAuth } from "@/contexts/authContext";
 import { WalletType } from "@/types";
-import Loading from "@/components/Loading";
-import WalletListItem from "@/components/WalletListItem";
 import { useCurrency } from "@/contexts/currencyContext";
 
 const Wallet = () => {
