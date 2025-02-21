@@ -10,16 +10,12 @@ import {
 import React, { useEffect, useState } from "react";
 import { colors, spacingX, spacingY } from "@/constants/theme";
 import { scale, verticalScale } from "@/utils/styling";
-import ModelWrapper from "@/components/ModelWrapper";
-import Header from "@/components/Header";
-import BackButton from "@/components/BackButton";
+import {ModelWrapper,Header,BackButton,Typo,Button} from '@/components'
 import { Image } from "expo-image";
 import { getProfileImage } from "@/services/imageService";
 import * as Icon from "phosphor-react-native";
-import Typo from "@/components/Typo";
 import Input from "@/components/Input";
 import { UserDataType } from "@/types";
-import Button from "@/components/Button";
 import { useAuth } from "@/contexts/authContext";
 import { updateUser } from "@/services/userService";
 import { useRouter } from "expo-router";
