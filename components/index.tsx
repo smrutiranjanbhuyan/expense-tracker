@@ -13,7 +13,7 @@ import Typo from "./Typo";
 import WalletListItem from "./WalletListItem";
 import CustomStatusBar from "./StatusBar";
 
-export default {
+export  {
   BackButton,
   Button,
   CustomTabs,
