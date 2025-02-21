@@ -26,7 +26,7 @@ import { currencyList } from "@/constants/data";
 const SettingsModel = () => {
   const router = useRouter();
   const [emailVerified, setEmailVerified] = useState(
-    auth.currentUser ?.emailVerified || false
+    auth.currentUser?.emailVerified || false
   );
 
   // Get currency values from the CurrencyContext
@@ -35,15 +35,15 @@ const SettingsModel = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleVerifyEmail = async () => {
-    if (auth.currentUser ) {
-      await auth.currentUser .reload();
-      const isVerified = auth.currentUser .emailVerified;
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      const isVerified = auth.currentUser.emailVerified;
       setEmailVerified(isVerified);
 
       if (isVerified) {
         Alert.alert("✅ Verified", "Your account is already verified.");
       } else {
-        await sendEmailVerification(auth.currentUser )
+        await sendEmailVerification(auth.currentUser)
           .then(() => {
             Alert.alert(
               "Verification Email Sent",
@@ -51,13 +51,20 @@ const SettingsModel = () => {
             );
           })
           .catch((error) => {
-            if (error.message.includes('Firebase: Error (auth/too-many-requests).')) {
+            if (
+              error.message.includes(
+                "Firebase: Error (auth/too-many-requests)."
+              )
+            ) {
               Alert.alert(
                 "Too Many Requests",
                 "You've made too many attempts. Please wait a few minutes before trying again."
               );
             } else {
-              Alert.alert("Error", error.message || "An unknown error occurred.");
+              Alert.alert(
+                "Error",
+                error.message || "An unknown error occurred."
+              );
             }
           });
       }
@@ -65,7 +72,7 @@ const SettingsModel = () => {
   };
 
   const deleteAccount = () => {
-    const user = auth.currentUser ;
+    const user = auth.currentUser;
 
     if (!user) {
       Alert.alert("Error", "No user is currently signed in.");
@@ -101,7 +108,8 @@ const SettingsModel = () => {
                 } else {
                   Alert.alert(
                     "Error",
-                    error.message || "An unknown error occurred while deleting your account."
+                    error.message ||
+                      "An unknown error occurred while deleting your account."
                   );
                 }
               });
@@ -197,13 +205,22 @@ const SettingsModel = () => {
             transparent={true}
             visible={modalVisible}
             onRequestClose={() => setModalVisible(false)}
-           
           >
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
-                <Typo size={18} fontWeight={"600"} style={styles.modalTitle}>
-                  Select Currency
-                </Typo>
+                <View style={styles.header}>
+                  <Typo size={18} fontWeight={"600"} style={styles.modalTitle}>
+                    Select Currency
+                  </Typo>
+
+                  <Pressable
+                    onPress={() => setModalVisible(false)}
+                    style={styles.closeButtonIcon}
+                  >
+                    <Icon.X size={24} color={colors.white} />
+                  </Pressable>
+                </View>
+
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Search currency..."
@@ -231,7 +248,9 @@ const SettingsModel = () => {
                   style={styles.closeButton}
                   onPress={() => setModalVisible(false)}
                 >
-                  <Typo size={16} fontWeight={"500"}>Close</Typo>
+                  <Typo size={16} fontWeight={"500"}>
+                    Close
+                  </Typo>
                 </Pressable>
               </View>
             </View>
@@ -255,6 +274,18 @@ const styles = StyleSheet.create({
   },
   listItem: {
     marginBottom: verticalScale(10),
+  },
+  header: {
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+
+    alignItems: "center",
+
+    marginBottom: spacingY._10,
+  },
+  closeButtonIcon: {
+    padding: spacingX._5,
   },
   flexRow: {
     flexDirection: "row",
@@ -281,7 +312,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingTop:verticalScale(150)
+    paddingTop: verticalScale(150),
   },
   modalContent: {
     width: "80%",
