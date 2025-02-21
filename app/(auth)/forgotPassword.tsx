@@ -1,16 +1,11 @@
 import React, { useState, useCallback } from "react";
 import { View, Alert, Pressable, StyleSheet } from "react-native";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
-import ScreenWrapper from "@/components/ScreenWrapper";
-import Typo from "@/components/Typo";
-import Button from "@/components/Button";
 import { colors, spacingX, spacingY } from "@/constants/theme";
 import { useRouter } from "expo-router";
-import BackButton from "@/components/BackButton";
-import Input from "@/components/Input";
 import * as Icons from "phosphor-react-native";
 import { verticalScale } from "@/utils/styling";
-
+import { ScreenWrapper, Typo, Button, BackButton, Input } from "@/components";
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
