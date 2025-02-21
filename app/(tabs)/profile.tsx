@@ -7,11 +7,9 @@ import {
   View,
 } from "react-native";
 import React, { useCallback } from "react";
-import ScreenWrapper from "@/components/ScreenWrapper";
+import {ScreenWrapper,Typo,Header} from '@/components'
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
-import Header from "@/components/Header";
-import Typo from "@/components/Typo";
 import { useAuth } from "@/contexts/authContext";
 import { Image } from "expo-image";
 import { getProfileImage } from "@/services/imageService";
