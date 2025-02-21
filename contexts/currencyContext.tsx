@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type CurrencyContextType = {
   currency: string;
@@ -176,8 +177,39 @@ const getCurrencySymbol = (currency: string): string => {
 };
 
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currency, setCurrency] = useState<string>("INR");
+  const [currency, setCurrencyState] = useState<string>("USD");
   const currencySymbol = getCurrencySymbol(currency);
+
+
+  useEffect(() => {
+    const loadCurrency = async () => {
+      try {
+        const storedCurrency = await AsyncStorage.getItem("currency");
+        if (storedCurrency) {
+          setCurrencyState(storedCurrency);
+        }
+      } catch (error) {
+        console.error("Error loading currency from AsyncStorage", error);
+      }
+    };
+    loadCurrency();
+  }, []);
+
+
+  useEffect(() => {
+    const storeCurrency = async () => {
+      try {
+        await AsyncStorage.setItem("currency", currency);
+      } catch (error) {
+        console.error("Error saving currency to AsyncStorage", error);
+      }
+    };
+    storeCurrency();
+  }, [currency]);
+
+  const setCurrency = (newCurrency: string) => {
+    setCurrencyState(newCurrency);
+  };
 
   return (
     <CurrencyContext.Provider value={{ currency, setCurrency, currencySymbol }}>
