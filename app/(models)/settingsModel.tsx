@@ -4,6 +4,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  Modal,
+  Pressable,
+  TextInput,
 } from "react-native";
 import React, { useState } from "react";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
@@ -17,48 +20,52 @@ import { useRouter } from "expo-router";
 import BackButton from "@/components/BackButton";
 import { auth } from "@/config/firebase";
 import { sendEmailVerification } from "firebase/auth";
+import { useCurrency } from "@/contexts/currencyContext"; // Import your currency context
+import { currencyList } from "@/constants/data";
 
 const SettingsModel = () => {
   const router = useRouter();
   const [emailVerified, setEmailVerified] = useState(
-    auth.currentUser?.emailVerified || false
+    auth.currentUser ?.emailVerified || false
   );
 
+  // Get currency values from the CurrencyContext
+  const { currency, setCurrency } = useCurrency();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const handleVerifyEmail = async () => {
-    if (auth.currentUser) {
-      await auth.currentUser.reload();
-      const isVerified = auth.currentUser.emailVerified;
+    if (auth.currentUser ) {
+      await auth.currentUser .reload();
+      const isVerified = auth.currentUser .emailVerified;
       setEmailVerified(isVerified);
 
       if (isVerified) {
         Alert.alert("✅ Verified", "Your account is already verified.");
       } else {
-        await sendEmailVerification(auth.currentUser)
+        await sendEmailVerification(auth.currentUser )
           .then(() => {
             Alert.alert(
               "Verification Email Sent",
               "We've just sent a verification link to your email. Please check your inbox (and spam folder) and follow the instructions to verify your account."
             );
-            
           })
           .catch((error) => {
-                 
             if (error.message.includes('Firebase: Error (auth/too-many-requests).')) {
               Alert.alert(
                 "Too Many Requests",
                 "You've made too many attempts. Please wait a few minutes before trying again."
               );
-            } else{
+            } else {
               Alert.alert("Error", error.message || "An unknown error occurred.");
             }
-         
           });
       }
     }
   };
 
   const deleteAccount = () => {
-    const user = auth.currentUser;
+    const user = auth.currentUser ;
 
     if (!user) {
       Alert.alert("Error", "No user is currently signed in.");
@@ -85,7 +92,7 @@ const SettingsModel = () => {
                   "Your account has been successfully deleted."
                 );
               })
-              .catch((error: any) => {
+              .catch((error) => {
                 if (error.code === "auth/requires-recent-login") {
                   Alert.alert(
                     "Reauthentication Required",
@@ -108,7 +115,7 @@ const SettingsModel = () => {
   // Define settings options
   const settingsOptions = [
     {
-      title: emailVerified ? "Account verified" : "Plese verify your account",
+      title: emailVerified ? "Account verified" : "Please verify your account",
       icon: emailVerified ? (
         <Icon.CheckCircle size={24} color={colors.white} />
       ) : (
@@ -129,7 +136,18 @@ const SettingsModel = () => {
       onPress: deleteAccount,
       bgColor: "#e11d48",
     },
+    {
+      title: "Preferred Currency",
+      icon: <Icon.CurrencyDollarSimple size={24} color={colors.white} />,
+      onPress: () => setModalVisible(true),
+      bgColor: "#6366f1",
+    },
   ];
+
+  // Filter currencies based on search query
+  const filteredCurrencies = currencyList.filter(({ code, symbol }) =>
+    `${symbol} ${code}`.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <ModelWrapper>
@@ -144,7 +162,7 @@ const SettingsModel = () => {
           {settingsOptions.map((item, index) => (
             <Animated.View
               key={index}
-              entering={FadeInDown.delay(index * 50)
+              entering={FadeInDown.delay(index * 100)
                 .springify()
                 .damping(14)}
               style={styles.listItem}
@@ -173,6 +191,51 @@ const SettingsModel = () => {
               </TouchableOpacity>
             </Animated.View>
           ))}
+
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => setModalVisible(false)}
+           
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Typo size={18} fontWeight={"600"} style={styles.modalTitle}>
+                  Select Currency
+                </Typo>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search currency..."
+                  placeholderTextColor={colors.neutral500}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+                <ScrollView>
+                  {filteredCurrencies.map(({ code, symbol }) => (
+                    <Pressable
+                      key={code}
+                      style={styles.currencyOption}
+                      onPress={() => {
+                        setCurrency(code);
+                        setModalVisible(false);
+                      }}
+                    >
+                      <Typo size={16} fontWeight={"500"}>
+                        {symbol} {code}
+                      </Typo>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+                <Pressable
+                  style={styles.closeButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Typo size={16} fontWeight={"500"}>Close</Typo>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       </View>
     </ModelWrapper>
@@ -212,5 +275,42 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: radius._15,
     marginRight: spacingX._12,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    paddingTop:verticalScale(150)
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: colors.neutral900,
+    borderRadius: radius._15,
+    padding: spacingY._20,
+  },
+  modalTitle: {
+    marginBottom: spacingY._10,
+  },
+  searchInput: {
+    height: 40,
+    borderColor: colors.neutral700,
+    borderWidth: 1,
+    borderRadius: radius._10,
+    paddingHorizontal: spacingX._10,
+    marginBottom: spacingY._10,
+    color: colors.white,
+  },
+  currencyOption: {
+    paddingVertical: spacingY._10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral700,
+  },
+  closeButton: {
+    marginTop: spacingY._10,
+    paddingVertical: spacingY._10,
+    alignItems: "center",
+    backgroundColor: colors.neutral800,
+    borderRadius: radius._15,
   },
 });
