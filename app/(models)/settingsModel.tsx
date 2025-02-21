@@ -11,13 +11,10 @@ import {
 import React, { useState } from "react";
 import { colors, radius, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
-import ModelWrapper from "@/components/ModelWrapper";
-import Header from "@/components/Header";
+import {ModelWrapper,Header,BackButton,Typo,Button} from '@/components'
 import * as Icon from "phosphor-react-native";
-import Typo from "@/components/Typo";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
-import BackButton from "@/components/BackButton";
 import { auth } from "@/config/firebase";
 import { sendEmailVerification } from "firebase/auth";
 import { useCurrency } from "@/contexts/currencyContext"; 
