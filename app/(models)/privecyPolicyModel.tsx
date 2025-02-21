@@ -1,11 +1,7 @@
 import { ScrollView, StyleSheet, View } from "react-native";
 import React from "react";
 import { colors, spacingY } from "@/constants/theme";
-import ModelWrapper from "@/components/ModelWrapper";
-import Header from "@/components/Header";
-import BackButton from "@/components/BackButton";
-import Typo from "@/components/Typo";
-import Button from "@/components/Button";
+import {ModelWrapper,Header,BackButton,Typo,Button} from '@/components'
 import { useRouter } from "expo-router";
 
 const PrivacyPolicyModal = () => {
