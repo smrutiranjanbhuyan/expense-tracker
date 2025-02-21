@@ -10,6 +10,7 @@ import { expenseCategories, incomeCategory } from "@/constants/data";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { Timestamp } from "firebase/firestore";
 import { useRouter } from "expo-router";
+import { useCurrency } from "@/contexts/currencyContext";
 
 const TransactionList = ({
   data,
@@ -88,7 +89,7 @@ const TransactionItem = ({
     month: "short", 
     year: "numeric"
   });
-  
+    const { currencySymbol } = useCurrency()
   return (
     <Animated.View
       entering={FadeInDown.delay(index * 70)
@@ -122,7 +123,7 @@ const TransactionItem = ({
             fontWeight={"500"}
             color={item?.type == "income" ? colors.primary : colors.rose}
           >
-            {item?.type == "income" ? "+ ₹" + item?.amount : "- ₹" + item?.amount}
+            {item?.type == "income" ? "+ "+currencySymbol + item?.amount : "- "+currencySymbol + item?.amount}
           </Typo>
           <Typo size={13} color={colors.neutral400}>
            {

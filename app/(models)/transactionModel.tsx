@@ -22,8 +22,10 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { createOrUpdateTransactions, deleteTransaction } from "@/services/transactionService";
+import { useCurrency } from "@/contexts/currencyContext";
 
 const transactionModel = () => {
+  const { currencySymbol, setCurrency } = useCurrency();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -200,7 +202,7 @@ const transactionModel = () => {
               selectedTextStyle={styles.dropDownselectedText}
               iconStyle={styles.dropDownIcon}
               data={wallets.map((wallet) => ({
-                label: `${wallet.name} (₹${wallet.amount})`,
+                label: `${wallet.name} ${currencySymbol}(${wallet.amount})`,
                 value: wallet.id,
               }))}
               maxHeight={300}

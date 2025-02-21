@@ -8,6 +8,7 @@ import { colors, radius, spacingY } from "@/constants/theme";
 import { Image } from "expo-image";
 import * as Icons from "phosphor-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useCurrency } from "@/contexts/currencyContext";
 
 const WalletListItem = ({
   item,
@@ -29,6 +30,7 @@ const WalletListItem = ({
             }
         })
     };
+      const { currencySymbol } = useCurrency()
   return (
     <Animated.View entering={FadeInDown.delay(index*50).springify().damping(13)}>
       <TouchableOpacity style={styles.container} onPress={openWallet}>
@@ -43,7 +45,7 @@ const WalletListItem = ({
         <View style={styles.nameContainer}>
           <Typo size={16}>{item?.name}</Typo>
           <Typo size={16} color={colors.neutral400}>
-            ₹{item?.amount}
+            {currencySymbol}{item?.amount}
           </Typo>
         </View>
         <Icons.CaretRight

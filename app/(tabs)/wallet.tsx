@@ -19,9 +19,12 @@ import { useAuth } from "@/contexts/authContext";
 import { WalletType } from "@/types";
 import Loading from "@/components/Loading";
 import WalletListItem from "@/components/WalletListItem";
+import { useCurrency } from "@/contexts/currencyContext";
 
 const Wallet = () => {
   const { user } = useAuth();
+    const { currencySymbol } = useCurrency();
+  
   const {
     data: wallets,
     loading,
@@ -54,7 +57,7 @@ const Wallet = () => {
         <View style={styles.balanceView}>
           <View style={{ alignItems: "center" }}>
             <Typo size={45} fontWeight={"500"}>
-              ₹{getTotalBalance()}
+              {currencySymbol}{getTotalBalance()}
             </Typo>
             <Typo size={16} color={colors.neutral300}>
               Total balance

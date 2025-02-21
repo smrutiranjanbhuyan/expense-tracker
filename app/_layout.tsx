@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { AuthProvider } from "@/contexts/authContext";
 import StatusBar from "@/components/StatusBar";
 import { colors } from "@/constants/theme";
+import { CurrencyProvider } from "@/contexts/currencyContext";
 const StackLayout = () => {
   return (
     <Stack
@@ -64,8 +65,10 @@ const StackLayout = () => {
 export default function Rootlayout() {
   return (
     <AuthProvider>
+      <CurrencyProvider>
       <StatusBar backgroundColor={colors.neutral900} barStyle="light-content" />
       <StackLayout />
+      </CurrencyProvider>
     </AuthProvider>
   );
 }

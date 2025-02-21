@@ -8,7 +8,9 @@ import { useAuth } from "@/contexts/authContext";
 import useFetchData from "@/hooks/useFetchData";
 import { WalletType } from "@/types";
 import { orderBy, where } from "firebase/firestore";
+import { useCurrency } from "@/contexts/currencyContext";
 const HomeCard = () => {
+  const { currencySymbol } = useCurrency();
   const { user } = useAuth();
   const {
     data: wallets,
@@ -52,7 +54,7 @@ const HomeCard = () => {
             />
           </View>
           <Typo color={colors.black} size={30} fontWeight={"bold"}>
-            ₹ {walletLoading ?'----' :getTotals()?.balance?.toFixed(2)}
+            {currencySymbol} {walletLoading ?'----' :getTotals()?.balance?.toFixed(2)}
           </Typo>
         </View>
         {/* Expenses and incomes */}
@@ -74,7 +76,7 @@ const HomeCard = () => {
             </View>
             <View style={{ alignSelf: "center" }}>
               <Typo size={17} color={colors.green} fontWeight={"600"}>
-                ₹ {walletLoading ?'----':getTotals()?.income?.toFixed(2)}
+                {currencySymbol} {walletLoading ?'----':getTotals()?.income?.toFixed(2)}
               </Typo>
             </View>
           </View>
@@ -95,7 +97,7 @@ const HomeCard = () => {
             </View>
             <View style={{ alignSelf: "center" }}>
               <Typo size={17} color={colors.rose} fontWeight={"600"}>
-                ₹ {walletLoading ?'----':getTotals()?.expense?.toFixed(2)}
+                {currencySymbol} {walletLoading ?'----':getTotals()?.expense?.toFixed(2)}
               </Typo>
             </View>
           </View>

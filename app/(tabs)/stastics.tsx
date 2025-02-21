@@ -24,9 +24,12 @@ import {
 } from "@/services/transactionService";
 import TransactionList from "@/components/TransactionList";
 import { TransactionType } from "@/types";
+import { useCurrency } from "@/contexts/currencyContext";
 
 const Stastics = () => {
   const { user } = useAuth();
+    const { currencySymbol } = useCurrency();
+  
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle("light-content");
@@ -99,7 +102,7 @@ const Stastics = () => {
   
   const yAxisLabels = Array.from(
     { length: noOfSections + 1 },
-    (_, i) => `₹${formatNumber((maxValue / noOfSections) * i)}`
+    (_, i) => `${currencySymbol}${formatNumber((maxValue / noOfSections) * i)}`
   );
   
 
@@ -144,7 +147,7 @@ const Stastics = () => {
                 roundedTop
                 roundedBottom
                 hideRules
-                yAxisLabelPrefix="₹"
+                yAxisLabelPrefix={currencySymbol}
                 yAxisThickness={0}
                 xAxisThickness={0}
                 yAxisLabelWidth={
