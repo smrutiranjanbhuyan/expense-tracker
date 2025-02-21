@@ -6,18 +6,14 @@ import {
   View,
 } from "react-native";
 import React, { useCallback } from "react";
-import Button from "@/components/Button";
-import Typo from "@/components/Typo";
+import {ScreenWrapper,Typo,Button,HomeCard,TransactionList} from '@/components'
 import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import { useAuth } from "@/contexts/authContext";
-import ScreenWrapper from "@/components/ScreenWrapper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { colors, spacingX, spacingY } from "@/constants/theme";
 import { verticalScale } from "@/utils/styling";
 import * as Icons from "phosphor-react-native";
-import HomeCard from "@/components/HomeCard";
-import TransactionList from "@/components/TransactionList";
 import { limit, orderBy, where } from "firebase/firestore";
 import useFetchData from "@/hooks/useFetchData";
 import { TransactionType, WalletType } from "@/types";
