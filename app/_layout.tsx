@@ -48,6 +48,13 @@ const StackLayout = () => {
           animation: "slide_from_bottom",
         }}
       />
+       <Stack.Screen
+        name="(models)/settingsModel"
+        options={{
+          presentation: "modal",
+          animation: "slide_from_bottom",
+        }}
+      />
       
     </Stack>
     
