@@ -63,7 +63,7 @@ const Profile = () => {
     Alert.alert("Conform", "Are you sure you want to log out", [
       {
         text: "Cancel",
-        onPress: () => console.log("Cancelled Logout"),
+        // onPress: () => console.log("Cancelled Logout"),
         style: "cancel",
       },
       {

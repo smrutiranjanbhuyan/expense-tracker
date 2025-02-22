@@ -140,7 +140,7 @@ const transactionModel = () => {
       [
         {
           text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
+          // onPress: () => console.log("Cancel Pressed"),
           style: "cancel",
         },
         {

@@ -56,12 +56,12 @@ const walletModel = () => {
 
     if (oldWallet?.id) data.id = oldWallet.id;
 
-    console.log("Submitting data:", data);
+    // console.log("Submitting data:", data);
 
     setLoading(true);
 
     const res = await createOrUpdateWallet(data);
-    console.log("Result:", res);
+    // console.log("Result:", res);
     setLoading(false);
     if (res.success) {
       router.back();
@@ -89,7 +89,7 @@ const walletModel = () => {
       [
         {
           text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
+          // onPress: () => console.log("Cancel Pressed"),
           style: "cancel",
         },
         {

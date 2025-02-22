@@ -31,7 +31,7 @@ const Wallet = () => {
     orderBy("created", "desc"),
   ]);
 
-  console.log("Wallets:", wallets.length);
+  // console.log("Wallets:", wallets.length);
 
   useFocusEffect(
     useCallback(() => {

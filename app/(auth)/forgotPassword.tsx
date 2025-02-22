@@ -27,7 +27,7 @@ const ForgotPassword = () => {
       );
       router.back();
     } catch (error: any) {
-      console.error("Password Reset Error:", error);
+      // console.error("Password Reset Error:", error);
       Alert.alert("Error", error.message);
     } finally {
       setIsLoading(false);
