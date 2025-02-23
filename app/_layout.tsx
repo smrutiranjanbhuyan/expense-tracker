@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/authContext";
 import StatusBar from "@/components/StatusBar";
 import { colors } from "@/constants/theme";
 import { CurrencyProvider } from "@/contexts/currencyContext";
+import Svg, { Path } from "react-native-svg";
 const StackLayout = () => {
   return (
     <Stack
