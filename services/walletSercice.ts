@@ -24,6 +24,11 @@ export const createOrUpdateWallet = async (
     let walletToSave = {
       ...walletData,
     };
+    if (walletData.id && "amount" in walletToSave) {
+      delete walletToSave.amount;
+    }
+
+    
     // Handle Image Upload
     if (walletData.image?.uri) {
       const imageUploadRes = await uploadFileToCloudinary(
