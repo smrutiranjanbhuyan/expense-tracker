@@ -30,13 +30,16 @@ jobs:
       - name: 🚀 Trigger APK build
         run: eas build --platform android --profile production --non-interactive --json > build.json
 
-      - name: 📥 Download APK from build URL
+      - name: 📥 Install jq (for parsing JSON)
+        run: sudo apt-get install jq
+
+      - name: 📥 Download APK from Expo build URL
         run: |
           BUILD_URL=$(cat build.json | jq -r '.artifacts.android.buildUrl')
-          curl -o app.apk "$BUILD_URL"
+          curl -L -o app.apk "$BUILD_URL"
 
       - name: 📦 Upload APK as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: expo-apk
           path: app.apk
