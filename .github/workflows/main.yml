@@ -25,7 +25,7 @@ jobs:
         run: npm install -g eas-cli@16.2.1
 
       - name: 🔑 Log in to Expo
-        run: eas login --token ${{ secrets.EXPO_TOKEN }}
+        run: eas whoami --token ${{ secrets.EXPO_TOKEN }}
 
       - name: 🚀 Trigger APK build
         run: |
