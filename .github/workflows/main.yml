@@ -1,0 +1,42 @@
+name: Build APK and Store Artifact
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🟢 Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🛠 Install specific EAS CLI version
+        run: npm install -g eas-cli@16.2.1
+
+      - name: 🔑 Log in to Expo
+        run: eas login --token ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🚀 Trigger APK build
+        run: eas build --platform android --profile production --non-interactive --json > build.json
+
+      - name: 📥 Download APK from build URL
+        run: |
+          BUILD_URL=$(cat build.json | jq -r '.artifacts.android.buildUrl')
+          curl -o app.apk "$BUILD_URL"
+
+      - name: 📦 Upload APK as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: expo-apk
+          path: app.apk
