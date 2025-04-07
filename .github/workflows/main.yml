@@ -1,4 +1,4 @@
-name: Build APK and Store Artifact
+name: Build APK with Expo
 
 on:
   push:
@@ -28,18 +28,12 @@ jobs:
         run: eas login --token ${{ secrets.EXPO_TOKEN }}
 
       - name: 🚀 Trigger APK build
-        run: eas build --platform android --profile production --non-interactive --json > build.json
-
-      - name: 📥 Install jq (for parsing JSON)
-        run: sudo apt-get install jq
-
-      - name: 📥 Download APK from Expo build URL
         run: |
-          BUILD_URL=$(cat build.json | jq -r '.artifacts.android.buildUrl')
-          curl -L -o app.apk "$BUILD_URL"
+          eas build --platform android --profile production --non-interactive --json > build-result.json
+          echo "📦 APK Build triggered..."
 
-      - name: 📦 Upload APK as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: expo-apk
-          path: app.apk
+      - name: 🔗 Show build link
+        run: |
+          apt-get update && apt-get install -y jq
+          BUILD_URL=$(jq -r '.artifacts.android.buildUrl' build-result.json)
+          echo "✅ Your APK is ready: $BUILD_URL"
